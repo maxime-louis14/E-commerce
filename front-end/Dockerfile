@@ -40,4 +40,4 @@ EXPOSE 8081
 # EXPOSE <port>
 
 # Commande par défaut pour démarrer le packager Metro
-CMD ["npm", "start", "--android", "--web"]
+CMD ["npm", "start", "--web"]
