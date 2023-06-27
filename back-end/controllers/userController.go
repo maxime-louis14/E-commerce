@@ -80,7 +80,7 @@ func SignUp() gin.HandlerFunc {
 		user.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		user.ID = primitive.NewObjectID()
 		user.User_id = user.ID.Hex()
-		token, refreshToken, _ := helper.GenerateAllTokens(*user.Email, *user.Nom, *user.Prenom, user.User_id)
+		token, refreshToken, _ := helper.GenerateAllTokens(*user.Email, *user.Nom, *user.Prenom, user.User_id, "")
 		user.Token = &token
 		user.Refresh_token = &refreshToken
 
@@ -100,7 +100,7 @@ func SignUp() gin.HandlerFunc {
 // Login is the api used to tget a single user
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 		var user models.User
 		var foundUser models.User
 
@@ -123,7 +123,7 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		token, refreshToken, _ := helper.GenerateAllTokens(*foundUser.Email, *foundUser.Nom, *foundUser.Prenom, foundUser.User_id)
+		token, refreshToken, _ := helper.GenerateAllTokens(*foundUser.Email, *foundUser.Nom, *foundUser.Prenom, foundUser.User_id, "")
 
 		helper.UpdateAllTokens(token, refreshToken, foundUser.User_id)
 

@@ -13,7 +13,7 @@ func main() {
 	port := os.Getenv("PORT")
 
 	if port == "" {
-		port = "8000"
+		port = "5000"
 	}
 
 	router := gin.New()
@@ -34,5 +34,5 @@ func main() {
 		c.JSON(200, gin.H{"success": "Access granted for api-2"})
 	})
 
-	router.Run(":" + port)
+	router.Run(":" + port)	
 }
