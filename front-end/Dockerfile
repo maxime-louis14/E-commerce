@@ -1,43 +1,23 @@
-# Utiliser une image de base avec Node.js et Android SDK
-FROM node:latest
+# Utilisez l'image de base Node.js
+FROM node:14-alpine
 
-# Définir le répertoire de travail à l'intérieur du conteneur
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Installation du JDK
-RUN apt-get update && \
-    apt-get install -y openjdk-11-jdk
+# Copiez les fichiers de package.json et package-lock.json dans le répertoire de travail
+COPY package*.json ./
 
-# Installation d'Android SDK
-RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -O /tmp/sdk.zip && \
-    unzip /tmp/sdk.zip -d /opt/android-sdk && \
-    rm /tmp/sdk.zip
-
-# Configuration des variables d'environnement pour Android SDK
-ENV ANDROID_HOME /opt/android-sdk
-ENV PATH $PATH:$ANDROID_HOME/cmdline-tools/tools/bin
-ENV PATH $PATH:$ANDROID_HOME/platform-tools
-
-# Accepter les licences Android SDK
-RUN yes | sdkmanager --licenses
-
-# Installation des packages Android SDK requis
-RUN sdkmanager "platforms;android-30" "build-tools;30.0.3"
-
-# Installation d'Expo CLI
-RUN npm install -g expo-cli
-
-# Copier les fichiers source de l'application dans le conteneur
-COPY . /app
-
-# Installer les dépendances de l'application
+# Installez les dépendances du projet
 RUN npm install
 
-# Exposer le port du packager Metro (par défaut : 8081)
-EXPOSE 8081
+# Installez l'outil Expo CLI globalement dans l'image Docker
+RUN npm install -g expo-cli
 
-# Exposer le port de l'application (si nécessaire)
-# EXPOSE <port>
+# Copiez le reste des fichiers du projet dans le répertoire de travail
+COPY . .
 
-# Commande par défaut pour démarrer le packager Metro
-CMD ["npm", "start", "--web"]
+# Exposez le port 3000 (ou tout autre port utilisé par votre application React Native)
+EXPOSE 3000
+
+# Commande pour exécuter votre application React Native avec l'outil Expo CLI localement
+CMD ["npx", "expo", "start", "--web"]
