@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	middleware "github.com/maxime-louis14/projet_jwt_go/middleware"
-	routes "github.com/maxime-louis14/projet_jwt_go/routes"
+	middleware "github.com/maxime-louis14/Clone-site-Vilebrequin/middleware"
+	routes "github.com/maxime-louis14/Clone-site-Vilebrequin/routes"
 
 	"github.com/gin-gonic/gin"
 )

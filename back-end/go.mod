@@ -1,4 +1,4 @@
-module github.com/maxime-louis14/projet_jwt_go
+module github.com/maxime-louis14/Clone-site-Vilebrequin
 
 go 1.19
 

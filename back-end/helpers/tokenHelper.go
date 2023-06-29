@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/maxime-louis14/projet_jwt_go/database"
+	"github.com/maxime-louis14/Clone-site-Vilebrequin/database"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"

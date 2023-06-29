@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/maxime-louis14/projet_jwt_go/database"
-	helper "github.com/maxime-louis14/projet_jwt_go/helpers"
-	"github.com/maxime-louis14/projet_jwt_go/models"
+	"github.com/maxime-louis14/Clone-site-Vilebrequin/database"
+	helper "github.com/maxime-louis14/Clone-site-Vilebrequin/helpers"
+	"github.com/maxime-louis14/Clone-site-Vilebrequin/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
