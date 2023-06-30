@@ -19,7 +19,7 @@ const Logout = () => {
     };
 
     // Effectuer une requête à l'API en utilisant fetch ou une librairie comme axios
-    fetch('https://api-url.com/signup', {
+    fetch('http://localhost:8181/users/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
