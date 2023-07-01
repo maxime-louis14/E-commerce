@@ -11,10 +11,10 @@ services:
     ports:
       - "8181:8181"
 
-  frontend:
+  reactnative:
     build:
       context: ./front-end
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.reactnative
     ports:
       - "19006:19006"
     depends_on:

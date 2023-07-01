@@ -8,15 +8,21 @@ import Logout from "./Logins/Logout";
 export default function ProfilScreen() {
   const navigation = useNavigation();
 
-  function navigate(screenName) {
-    navigation.navigate(screenName);
+  function navigate() {
+    navigation.navigate(Login);
+
+    navigation.navigate(Logout);
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Mon Compte</Text>
-      <Button onPress={() => navigate("Login")} title="Login" />
-      <Button onPress={() => navigate("Logout")} title="Logout" />
+      <Button title="login" onPress={navigate}>
+        Login
+      </Button>
+      <Button title="Logout" onPress={navigate}>
+        Logout
+      </Button>
     </View>
   );
 }

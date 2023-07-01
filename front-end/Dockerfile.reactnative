@@ -1,4 +1,4 @@
-# Utilisez l'image de base Node.js
+# Utilisez une image de base Node.js
 FROM node:14-alpine
 
 # Définir le répertoire de travail
@@ -17,7 +17,7 @@ RUN npm install -g expo-cli
 COPY . .
 
 # Exposez le port 3000 (ou tout autre port utilisé par votre application React Native)
-EXPOSE 3000
+EXPOSE 19006
 
 # Commande pour exécuter votre application React Native avec l'outil Expo CLI localement
 CMD ["npx", "expo", "start", "--web"]
