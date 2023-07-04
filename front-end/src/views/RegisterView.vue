@@ -7,6 +7,23 @@
       <input type="password" placeholder="password" v-model="password" />
       <button @click="envoyer">envoyer</button>
     </form>
+  <div>
+    <h2>Register</h2>
+    <from>
+      <div>
+        <input type="text" placeholder="Prenom" v-model="Prenom" />
+      </div>
+      <div>
+        <input type="text" placeholder="Nom" v-model="Nom" />
+      </div>
+      <div>
+        <input type="email" placeholder="Email" v-model="email" />
+      </div>
+      <div>
+        <input type="password" placeholder="Password" v-model="password" />
+      </div>
+      <button @click="envoyer">Envoyer</button>
+    </from>
   </div>
 </template>
 
@@ -14,49 +31,60 @@
 import axios from "axios";
 
 export default {
-  name: "inscription",
   data() {
     return {
-      email: null,
-      password: null,
-      message: null
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: ""
     };
   },
 
   methods: {
-    async envoyer(e) {
-      e.preventDefault();
-      this.message = null;
-      const regexEmail = /^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/;
+    register() {
+      // Logique d'inscription ici
+      // Vous pouvez envoyer les données du formulaire à votre API pour créer un nouvel utilisateur
 
-      if(!this.email){
-        return this.message = "rensenignez l'email";
-      }else if(!regexEmail.test(this.email)){
-        return this.message = "email invalide";
-      }else if(!this.password){
-        return this.message = "renseignez un mot de passe";
-      }else if(this.password.length < 4){
-        return this.message = "le mot de passe est trop court"
-      }
+      // Exemple de log :
+      console.log("Prénom:", this.firstName);
+      console.log("Nom:", this.lastName);
+      console.log("Email:", this.email);
+      console.log("Mot de passe:", this.password);
 
-      if(this.message == null){
-        const url = "http://127.0.0.1:8000/api/inscription";
-        const user = {
-          "email": this.email,
-          "password": this.password
-        }
+      // Réinitialiser les champs du formulaire
+      this.firstName = "";
+      this.lastName = "";
+      this.email = "";
+      this.password = "";
 
-        await axios.post(url, user).then(
-          (res)=>{
-            this.$router.push("/")
-          },
-          (error)=>{
-            this.message = "une erreur est survenue lors de l'inscription";
-          }
-        )
-      }
-
+      // Afficher un message de succès ou rediriger vers une autre page
     }
   }
 };
 </script>
+
+<style scoped>
+h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+form div {
+  margin-bottom: 15px;
+}
+label {
+  display: block;
+  font-weight: bold;
+}
+input {
+  width: 200px;
+  padding: 5px;
+}
+button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+</style>
