@@ -1,6 +1,6 @@
-# Clonage du site Vilebrequin Shop avec Docker
+# Clonage du site Vilebrequin Shop avec Vue.js et Vite
 
-Ce projet vise à cloner le site Vilebrequin Shop, disponible à l'adresse suivante : [https://www.shop.benzin.fr/vilebrequin?page=2](https://www.shop.benzin.fr/vilebrequin?page=2), en utilisant Docker pour faciliter la configuration et le déploiement. L'objectif principal est de recréer la structure, le design et les fonctionnalités du site existant, en permettant aux utilisateurs de naviguer facilement et de consulter les produits disponibles sur Vilebrequin Shop.
+Ce projet vise à cloner le site Vilebrequin Shop, disponible à l'adresse suivante : [https://www.shop.benzin.fr/vilebrequin?page=2](https://www.shop.benzin.fr/vilebrequin?page=2), en utilisant Vue.js avec Vite pour faciliter la configuration et le développement. L'objectif principal est de recréer la structure, le design et les fonctionnalités du site existant, en permettant aux utilisateurs de naviguer facilement et de consulter les produits disponibles sur Vilebrequin Shop.
 
 ![Vilebrequin Shop Clone](https://example.com/vilebrequin_shop_clone_screenshot.png)
 
@@ -18,17 +18,17 @@ Le site cloné de Vilebrequin Shop comportera les fonctionnalités suivantes :
 
 ## Technologies utilisées
 
-Le clonage du site Vilebrequin Shop sera réalisé en utilisant les technologies suivantes avec Docker :
+Le clonage du site Vilebrequin Shop sera réalisé en utilisant les technologies suivantes avec Vue.js et Vite :
 
 - Backend (Go) :
   - [Go](https://golang.org/) : Un langage de programmation performant et simple à utiliser.
   - Framework Web (par exemple, [Gin](https://github.com/gin-gonic/gin)) : Pour créer les routes, gérer les requêtes HTTP et les réponses.
 
-- Frontend (React Native) :
-  - [React Native](https://reactnative.dev/) : Un framework JavaScript pour le développement d'applications mobiles multiplateformes.
-  - [Expo](https://expo.io/) : Une plateforme pour faciliter le développement et le déploiement d'applications React Native.
-  - Librairies UI (par exemple, [React Navigation](https://reactnavigation.org/)) : Pour la navigation entre les écrans et la gestion de l'état de l'application.
-  - Gestion d'état (par exemple, [Redux](https://redux.js.org/)) : Pour gérer l'état global de l'application.
+- Frontend (Vue.js avec Vite) :
+  - [Vue.js](https://vuejs.org/) : Un framework JavaScript progressif pour la construction d'interfaces utilisateur.
+  - [Vite](https://vitejs.dev/) : Un outil de développement rapide pour les applications Vue.js.
+  - Librairies UI (par exemple, [Vuetify](https://vuetifyjs.com/)) : Pour la création d'une interface utilisateur réactive et esthétique.
+  - Gestion d'état (par exemple, [Vuex](https://vuex.vuejs.org/)) : Pour gérer l'état global de l'application.
 
 - Docker : Pour faciliter la configuration et le déploiement du projet.
 
@@ -38,10 +38,10 @@ Pour configurer et déployer le projet de clonage du site Vilebrequin Shop en ut
 
 1. Clonez le dépôt GitHub du projet sur votre machine locale :
 
-```shell
-git clone
 
- https://github.com/votre-utilisateur/vilebrequin-shop.git
+
+```shell
+git clone https://github.com/votre-utilisateur/vilebrequin-shop.git
 ```
 
 2. Accédez au répertoire du projet :
@@ -64,7 +64,7 @@ docker-compose build
 docker-compose up
 ```
 
-Cela démarrera les conteneurs Docker pour le backend (Go) et le frontend (React Native) en utilisant les images précédemment construites.
+Cela démarrera les conteneurs Docker pour le backend (Go) et le frontend (Vue.js avec Vite) en utilisant les images précédemment construites.
 
 6. Accédez au site cloné des YouTubeurs Vilebrequin via votre navigateur web :
 
@@ -92,4 +92,4 @@ Ce projet est sous licence MIT. Consultez le fichier `LICENSE` pour plus d'infor
 
 ---
 
-Ce README est fourni à titre d'exemple et peut être adapté en fonction des besoins spécifiques du projet de clonage du site Vilebrequin Shop avec Docker.
+Ce README est fourni à titre d'exemple et peut être adapté en fonction des besoins spécifiques du projet de clonage du site Vilebrequin Shop avec Vue.js et Vite.
