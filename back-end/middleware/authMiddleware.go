@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	helper "github.com/maxime-louis14/projet_jwt_go/helpers"
+	helper "github.com/maxime-louis14/Clone-site-Vilebrequin/helpers"
 
 	"github.com/gin-gonic/gin"
 )

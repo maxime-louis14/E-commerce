@@ -1,43 +1,21 @@
-# Utiliser une image de base avec Node.js et Android SDK
-FROM node:latest
+# Utilisez l'image Node.js en tant que base
+FROM node:14
 
-# Définir le répertoire de travail à l'intérieur du conteneur
+# Définit le répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Installation du JDK
-RUN apt-get update && \
-    apt-get install -y openjdk-11-jdk
+# Copie le package.json et le package-lock.json dans le répertoire de travail
+COPY package*.json ./
 
-# Installation d'Android SDK
-RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -O /tmp/sdk.zip && \
-    unzip /tmp/sdk.zip -d /opt/android-sdk && \
-    rm /tmp/sdk.zip
-
-# Configuration des variables d'environnement pour Android SDK
-ENV ANDROID_HOME /opt/android-sdk
-ENV PATH $PATH:$ANDROID_HOME/cmdline-tools/tools/bin
-ENV PATH $PATH:$ANDROID_HOME/platform-tools
-
-# Accepter les licences Android SDK
-RUN yes | sdkmanager --licenses
-
-# Installation des packages Android SDK requis
-RUN sdkmanager "platforms;android-30" "build-tools;30.0.3"
-
-# Installation d'Expo CLI
-RUN npm install -g expo-cli
-
-# Copier les fichiers source de l'application dans le conteneur
-COPY . /app
-
-# Installer les dépendances de l'application
+# Installe les dépendances
 RUN npm install
+RUN npm install -g vite
 
-# Exposer le port du packager Metro (par défaut : 8081)
-EXPOSE 8081
+# Copie tout le contenu du répertoire actuel dans le répertoire de travail du conteneur
+COPY . .
 
-# Exposer le port de l'application (si nécessaire)
-# EXPOSE <port>
+# Expose le port sur lequel l'application Vue.js sera accessible (par défaut : 3000)
+EXPOSE 5173
 
-# Commande par défaut pour démarrer le packager Metro
-CMD ["npm", "start", "--web"]
+# Exécute la commande de démarrage de l'application
+CMD [ "npm", "run", "dev" ]
