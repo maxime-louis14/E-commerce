@@ -1,90 +1,62 @@
 <template>
-  <div class="container">
-    <h1>Inscription</h1>
-    <p v-if="message != null">{{ message }}</p>
-    <form>
-      <input type="email" placeholder="Votre Email" v-model="email" />
-      <input type="password" placeholder="password" v-model="password" />
-      <button @click="envoyer">envoyer</button>
-    </form>
   <div>
     <h2>Register</h2>
-    <from>
+    <form>
       <div>
-        <input type="text" placeholder="Prenom" v-model="Prenom" />
+        <input type="text" placeholder="prenom" v-model="prenom" />
       </div>
       <div>
-        <input type="text" placeholder="Nom" v-model="Nom" />
+        <input type="text" placeholder="nom" v-model="nom" />
       </div>
       <div>
-        <input type="email" placeholder="Email" v-model="email" />
+        <input type="email" placeholder="email" v-model="email" />
       </div>
       <div>
-        <input type="password" placeholder="Password" v-model="password" />
+        <input type="password" placeholder="password" v-model="password" />
+        <button @click="envoyer">Envoyer</button>
       </div>
-      <button @click="envoyer">Envoyer</button>
-    </from>
+    </form>
   </div>
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
+  name: "register",
   data() {
     return {
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: ""
+      prenom: null,
+      nom: null,
+      email: null,
+      password: null
     };
   },
-
   methods: {
-    register() {
-      // Logique d'inscription ici
-      // Vous pouvez envoyer les données du formulaire à votre API pour créer un nouvel utilisateur
+    envoyer() {
+      const userData = {
+        prenom: this.prenom,
+        nom: this.nom,
+        email: this.email,
+        password: this.password
+      };
 
-      // Exemple de log :
-      console.log("Prénom:", this.firstName);
-      console.log("Nom:", this.lastName);
-      console.log("Email:", this.email);
-      console.log("Mot de passe:", this.password);
-
-      // Réinitialiser les champs du formulaire
-      this.firstName = "";
-      this.lastName = "";
-      this.email = "";
-      this.password = "";
-
-      // Afficher un message de succès ou rediriger vers une autre page
+      // Envoyer les informations d'enregistrement au backend
+      fetch("http://localhost:8181/users/signup", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json"
+        },
+        body: JSON.stringify(userData)
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // Gérer la réponse du backend
+          console.log("Réponse du backend:", data);
+          // Effectuer une redirection ou une autre action selon la réponse du backend
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la requête d'enregistrement:", error);
+        });
     }
   }
 };
 </script>
-
-<style scoped>
-h2 {
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-form div {
-  margin-bottom: 15px;
-}
-label {
-  display: block;
-  font-weight: bold;
-}
-input {
-  width: 200px;
-  padding: 5px;
-}
-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-}
-</style>
