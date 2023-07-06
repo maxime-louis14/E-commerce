@@ -22,7 +22,7 @@ import HelloWorld from "./components/HelloWorld.vue";
         <RouterLink to="/login">Login</RouterLink>
       </nav>
     </div>
-  </header>
+  </header> 
 
   <RouterView />
 </template>
