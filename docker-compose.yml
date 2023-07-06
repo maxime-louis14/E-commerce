@@ -9,7 +9,7 @@ services:
     environment:
       - WAIT_HOSTS=mongo
     ports:
-      - "8181:8181"
+      - "8080:8080"
 
   front-end:
     build:

@@ -1,42 +1,57 @@
 <template>
   <div>
     <h2>Inscription</h2>
-    <form>
+    <form @submit.prevent="login">
       <div>
         <label for="email">Email:</label>
-        <input type="email" id="email" v-model="email" required />
+        <input type="email" id="email" v-model="email" />
       </div>
       <div>
         <label for="password">Mot de passe:</label>
-        <input type="password" id="password" v-model="password" required />
+        <input type="password" id="password" v-model="password" />
       </div>
-      <button type="submit">login</button>
+      <button @click="(e) => login(e)">login</button>
     </form>
   </div>
 </template>
 
 <script>
+import Swal from "sweetalert2";
+
 export default {
+  name: "login",
   data: () => {
     return {
-      email: "",
-      password: ""
+      user: {
+        email: "",
+        password: ""
+      }
     };
   },
 
   methods: {
-    login() {
-      fetch("http://localhost:8181/users/login", {
+    login(e) {
+      e.preventDefault();
+      fetch("http://localhost:8080/users/login", {
         method: "POST",
         headers: {
-          "Content-type": "application/json"
+          "Access-Control-Allow-Origin": "*",
+          "Content-type": "application/json;charset=UTF-8",
+          Accapt: "application/json",
+          mode: "cors"
         },
         body: {
           email: this.email,
           password: this.password
         }
       })
-        .then((response) => response.json())
+        .then((response) => {
+          response.json();
+          Swal.fire({
+            icon: "success",
+            title: "L'utilisateur a bien été ajouté"
+          });
+        })
         .then((data) => {
           // Vérifiez si la réponse contient un JWT valide
           if (data.token) {

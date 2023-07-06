@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2>Register</h2>
-    <form action="">
+    <form @submit.prevent="register">
       <div>
         <input type="text" placeholder="prenom" v-model="prenom" />
       </div>
@@ -18,7 +18,7 @@
         v-model="password"
       />
       <div v-if="password && password.length >= 1">
-        <button @click="(e) => envoyer(e)">Envoyer</button>
+        <button @click="(e) => register(e)">Envoyer</button>
       </div>
       <div v-else>
         <p>Veuillez saisir un mot de passe d'au moins 15 caractères.</p>
@@ -34,14 +34,14 @@ export default {
   name: "register",
   data() {
     return {
-      prenom: null,
-      nom: null,
-      email: null,
-      password: null
+      prenom: "",
+      nom: "",
+      email: "",
+      password: ""
     };
   },
   methods: {
-    envoyer(e) {
+    register(e) {
       e.preventDefault();
       const userData = {
         prenom: this.prenom,
@@ -49,16 +49,15 @@ export default {
         email: this.email,
         password: this.password
       };
-      console.log(userData);
       // Envoyer les informations d'enregistrement au backend
-      fetch("http://localhost:8181/users/signup", {
+      fetch("http://localhost:8080/users/register", {
         method: "POST",
         headers: {
-          "Content-type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods":
-            "GET, POST, PATCH, PUT, DELETE, OPTIONS",
-          "Access-Control-Allow-Headers": "Origin, Content-Type, X-Auth-Token"
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
+          'Access-Control-Allow-Headers': 'Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization',
+          'Content-Type': 'application/json;charset=UTF-8',
+          'Accapt': "application/json",
         },
         body: JSON.stringify(userData)
       })
@@ -67,12 +66,41 @@ export default {
           Swal.fire({
             icon: "success",
             title: "L'utilisateur a bien été ajouté"
-          });
+          })
         })
-        .catch((error) => {
-          console.error("Erreur lors de la requête d'enregistrement:", error);
-        });
+        .then((json) => console.log(json))
+        .then((err) => console.log(err));
     }
   }
 };
 </script>
+
+<style>
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h2 {
+  text-align: center;
+}
+
+input {
+  margin-bottom: 10px;
+}
+
+div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+button {
+  margin-top: 10px;
+}
+
+p {
+  text-align: center;
+}
+</style>
