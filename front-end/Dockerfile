@@ -9,13 +9,13 @@ COPY package*.json ./
 
 # Installe les dépendances
 RUN npm install
-RUN npm install -g vite
+# RUN npm install -g vite
 
 # Copie tout le contenu du répertoire actuel dans le répertoire de travail du conteneur
 COPY . .
 
 # Expose le port sur lequel l'application Vue.js sera accessible (par défaut : 3000)
-EXPOSE 5173
+EXPOSE 3000
 
 # Exécute la commande de démarrage de l'application
 CMD [ "npm", "run", "dev" ]

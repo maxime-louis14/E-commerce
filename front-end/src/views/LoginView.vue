@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2>Inscription</h2>
-    <from>
+    <form>
       <div>
         <label for="email">Email:</label>
         <input type="email" id="email" v-model="email" required />
@@ -11,13 +11,11 @@
         <input type="password" id="password" v-model="password" required />
       </div>
       <button type="submit">login</button>
-    </from>
+    </form>
   </div>
 </template>
 
 <script>
-import jwt from "jsonwebtoken";
-
 export default {
   data: () => {
     return {
@@ -28,15 +26,15 @@ export default {
 
   methods: {
     login() {
-      fetch("localhost:8181/users/login", {
+      fetch("http://localhost:8181/users/login", {
         method: "POST",
         headers: {
           "Content-type": "application/json"
         },
-        body: JSON.stringify({
+        body: {
           email: this.email,
           password: this.password
-        })
+        }
       })
         .then((response) => response.json())
         .then((data) => {
