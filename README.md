@@ -91,5 +91,3 @@ Ce projet de clonage du site Vilebrequin Shop est réalisé à des fins éducati
 Ce projet est sous licence MIT. Consultez le fichier `LICENSE` pour plus d'informations.
 
 ---
-
-Ce README est fourni à titre d'exemple et peut être adapté en fonction des besoins spécifiques du projet de clonage du site Vilebrequin Shop avec Vue.js et Vite.
