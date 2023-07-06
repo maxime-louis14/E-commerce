@@ -1,83 +1,106 @@
 <template>
   <div>
-    <h2>Inscription</h2>
+    <h2>Register</h2>
     <form @submit.prevent="register">
       <div>
-        <label for="firstName">Prénom:</label>
-        <input type="text" id="firstName" v-model="firstName" required />
+        <input type="text" placeholder="prenom" v-model="prenom" />
       </div>
       <div>
-        <label for="lastName">Nom:</label>
-        <input type="text" id="lastName" v-model="lastName" required />
+        <input type="text" placeholder="nom" v-model="nom" />
       </div>
       <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" v-model="email" required />
+        <input type="email" placeholder="email" v-model="email" />
       </div>
-      <div>
-        <label for="password">Mot de passe:</label>
-        <input type="password" id="password" v-model="password" required />
+      <input
+        type="password"
+        minlength="1"
+        placeholder="password"
+        v-model="password"
+      />
+      <div v-if="password && password.length >= 1">
+        <button @click="(e) => register(e)">Envoyer</button>
       </div>
-      <button type="submit">S'inscrire</button>
+      <div v-else>
+        <p>Veuillez saisir un mot de passe d'au moins 15 caractères.</p>
+      </div>
     </form>
   </div>
 </template>
 
 <script>
+import Swal from "sweetalert2";
+
 export default {
+  name: "register",
   data() {
     return {
-      firstName: "",
-      lastName: "",
+      prenom: "",
+      nom: "",
       email: "",
       password: ""
     };
   },
   methods: {
-    register() {
-      // Logique d'inscription ici
-      // Vous pouvez envoyer les données du formulaire à votre API pour créer un nouvel utilisateur
-
-      // Exemple de log :
-      console.log("Prénom:", this.firstName);
-      console.log("Nom:", this.lastName);
-      console.log("Email:", this.email);
-      console.log("Mot de passe:", this.password);
-
-      // Réinitialiser les champs du formulaire
-      this.firstName = "";
-      this.lastName = "";
-      this.email = "";
-      this.password = "";
-
-      // Afficher un message de succès ou rediriger vers une autre page
+    register(e) {
+      e.preventDefault();
+      const userData = {
+        prenom: this.prenom,
+        nom: this.nom,
+        email: this.email,
+        password: this.password
+      };
+      // Envoyer les informations d'enregistrement au backend
+      fetch("http://localhost:8080/users/register", {
+        method: "POST",
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
+          'Access-Control-Allow-Headers': 'Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization',
+          'Content-Type': 'application/json;charset=UTF-8',
+          'Accapt': "application/json",
+        },
+        body: JSON.stringify(userData)
+      })
+        .then((response) => {
+          response.json();
+          Swal.fire({
+            icon: "success",
+            title: "L'utilisateur a bien été ajouté"
+          })
+        })
+        .then((json) => console.log(json))
+        .then((err) => console.log(err));
     }
   }
 };
 </script>
 
-<style scoped>
+<style>
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 h2 {
-  font-size: 20px;
+  text-align: center;
+}
+
+input {
   margin-bottom: 10px;
 }
-form div {
-  margin-bottom: 15px;
+
+div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-label {
-  display: block;
-  font-weight: bold;
-}
-input {
-  width: 200px;
-  padding: 5px;
-}
+
 button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
+  margin-top: 10px;
+}
+
+p {
+  text-align: center;
 }
 </style>

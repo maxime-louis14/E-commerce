@@ -15,7 +15,6 @@ import HelloWorld from "./components/HelloWorld.vue";
 
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
-
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
@@ -23,7 +22,7 @@ import HelloWorld from "./components/HelloWorld.vue";
         <RouterLink to="/login">Login</RouterLink>
       </nav>
     </div>
-  </header>
+  </header> 
 
   <RouterView />
 </template>
@@ -34,7 +33,7 @@ header {
   max-height: 100vh;
 }
 
-.logo {
+.logo {   
   display: block;
   margin: 0 auto 2rem;
 }

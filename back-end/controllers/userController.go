@@ -31,7 +31,7 @@ func HashPassword(password string) string {
 	return string(bytes)
 }
 
-// VerifyPassword checks the input password while verifying it with the passward in the DB.
+// VerifyPassword vérifie le mot de passe saisi en le comparant au mot de passe contenu dans la base de données.
 func VerifyPassword(userPassword string, providedPassword string) (bool, string) {
 	err := bcrypt.CompareHashAndPassword([]byte(providedPassword), []byte(userPassword))
 	check := true
@@ -46,15 +46,17 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 // CreateUser is the api used to tget a single user
 func SignUp() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 		var user models.User
 
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		fmt.Println(c)
 
 		validationErr := validate.Struct(user)
+		fmt.Println(validationErr)
 		if validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			return
@@ -100,7 +102,7 @@ func SignUp() gin.HandlerFunc {
 // Login is the api used to tget a single user
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var user models.User
 		var foundUser models.User
 
