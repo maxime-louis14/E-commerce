@@ -49,15 +49,12 @@ export default {
         email: this.email,
         password: this.password
       };
+      console.log(userData);
       // Envoyer les informations d'enregistrement au backend
       fetch("http://localhost:8080/users/register", {
         method: "POST",
         headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
-          'Access-Control-Allow-Headers': 'Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization',
-          'Content-Type': 'application/json;charset=UTF-8',
-          'Accapt': "application/json",
+          
         },
         body: JSON.stringify(userData)
       })
@@ -68,7 +65,7 @@ export default {
             title: "L'utilisateur a bien été ajouté"
           })
         })
-        .then((json) => console.log(json))
+        .then((data) => console.log(data))
         .then((err) => console.log(err));
     }
   }
