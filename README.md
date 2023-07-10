@@ -2,7 +2,9 @@
 
 Ce projet vise à cloner le site Vilebrequin Shop, disponible à l'adresse suivante : [https://www.shop.benzin.fr/vilebrequin?page=2](https://www.shop.benzin.fr/vilebrequin?page=2), en utilisant Vue.js avec Vite pour faciliter la configuration et le développement. L'objectif principal est de recréer la structure, le design et les fonctionnalités du site existant, en permettant aux utilisateurs de naviguer facilement et de consulter les produits disponibles sur Vilebrequin Shop.
 
-![Vilebrequin Shop Clone](https://example.com/vilebrequin_shop_clone_screenshot.png)
+![Vilebrequin Shop Clone](https://www.bfmtv.com/people/tv/pierre-chabrier-et-sylvain-levy-de-la-chaine-vilebrequin-arrivent-aux-manettes-de-top-gear-france_AN-202305170712.html)
+
+![Youtube](https://www.youtube.com/channel/UCC9mlCpyisiIpp9YA9xV-QA)
 
 ## Fonctionnalités
 
