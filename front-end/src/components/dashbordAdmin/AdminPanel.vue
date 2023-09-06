@@ -1,9 +1,7 @@
 <template>
   <div>
     <!-- Barre de navigation -->
-    <nav class="bg-blue-600 p-4">
-      <h1 class="text-2xl font-semibold">Tableau de bord administratif</h1>
-    </nav>
+      <h1 class="text-2xl text-center">Tableau de bord administratif</h1>
   </div>
 </template>
 

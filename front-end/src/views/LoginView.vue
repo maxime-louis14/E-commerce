@@ -1,16 +1,42 @@
 <template>
   <div>
-    <h2>Inscription</h2>
+    <h1>Connexion</h1>
+  </div>
+
+  <div class="formulaire-login mx-80 w-80">
     <form @submit.prevent="login">
-      <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" v-model="email" />
+      <div class="relative z-0 w-80 mb-6 group">
+        <label class="block">
+          <span class="block text-sm font-medium text-slate-700"> Mail </span>
+        </label>
+        <input
+          type="email"
+          id="email"
+          v-model="email"
+          class="block py-2.5 px-0 w-80 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+        />
       </div>
-      <div>
-        <label for="password">Mot de passe:</label>
-        <input type="password" id="password" v-model="password" />
+      <div class="relative z-0 w-80 mb-6 group">
+        <label
+          class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+          for="password"
+          >Mot de passe :</label
+        >
+        <input
+          type="password"
+          id="password"
+          v-model="password"
+          class="block py-2.5 px-0 w-80 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+        />
       </div>
-      <button @click="(e) => login(e)">login</button>
+      <div class="flex items-center justify-between">
+        <button
+          type="submit"
+          class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring focus:ring-green-200"
+        >
+          Connexion
+        </button>
+      </div>
     </form>
   </div>
 </template>
@@ -65,28 +91,69 @@ export default {
 };
 </script>
 
-<style scoped>
-h2 {
-  font-size: 20px;
-  margin-bottom: 10px;
+<style scoped>/* Style pour le titre "Connexion" */
+h1 {
+  font-size: 24px;
+  text-align: center;
+  color: #333; /* Couleur du texte */
+  margin-bottom: 20px; /* Marge inférieure */
 }
-form div {
-  margin-bottom: 15px;
+
+/* Style pour le conteneur du formulaire */
+.formulaire-login {
+  background-color: #f5f5f5; /* Couleur de fond du formulaire */
+  padding: 20px; /* Marges intérieures */
+  border-radius: 10px; /* Coins arrondis */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Ombre légère */
+  text-align: center;
+  width: 300px;
+  margin: auto;
+  margin-top: 50px;
 }
+
+/* Style pour les libellés */
 label {
-  display: block;
   font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
 }
-input {
-  width: 200px;
-  padding: 5px;
+
+/* Style pour les champs de saisie */
+.input-field {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: border-color 0.3s;
+  font-size: 16px;
 }
-button {
+
+.input-field:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+/* Style pour le bouton de connexion */
+.login-button {
   background-color: #4caf50;
   color: white;
-  border: none;
   padding: 10px 20px;
-  font-size: 16px;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
 }
+
+.login-button:hover {
+  background-color: #45a049;
+}
+
+/* Style pour le message d'erreur */
+.error-message {
+  text-align: center;
+  color: #e74c3c;
+  margin-top: 10px;
+}
+
 </style>

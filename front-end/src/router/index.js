@@ -27,9 +27,9 @@ const router = createRouter({
       component: () => import('../views/Boutique.vue')
     },
     {
-      path: '/adminpanel',
-      name: 'adminpanel',
-      component: () => import('../views/Admin.vue')
+      path: '/dashboard',
+      name: 'dashboard',
+      component: () => import('../views/views-admin/dashboard.vue')
     }
     
   ]
