@@ -12,7 +12,7 @@
         <input type="email" placeholder="email" v-model="email" />
       </div>
       <input
-        type="password"
+        type="password" 
         minlength="1"
         placeholder="password"
         v-model="password"
