@@ -18,3 +18,4 @@ RUN go build -o main .
 
 # Définir la commande par défaut pour exécuter l'application
 CMD ["./main"]
+                

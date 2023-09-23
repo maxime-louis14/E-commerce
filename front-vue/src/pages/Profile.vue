@@ -35,6 +35,7 @@ import { ref, onMounted } from "vue";
 export default {
   setup() {
     const isAuthenticated = ref(false);
+
     const checkAuthentication = () => {
       const token = localStorage.getItem("Token");
       console.log("Token récupéré du localStorage :", token);
@@ -56,12 +57,7 @@ export default {
       this.$router.push("/"); // Attention : Vous ne pouvez pas utiliser `this` ici, utilisez plutôt un routage impératif
     };
 
-    // Utilisez onBeforeMount pour retarder le rendu des éléments conditionnels
-    onBeforeMount(() => {
-      checkAuthentication();
-    });
-
-    // Vérifiez l'authentification après le montage du composant
+    // Utilisez onMounted pour exécuter le code après le montage du composant
     onMounted(() => {
       checkAuthentication();
     });

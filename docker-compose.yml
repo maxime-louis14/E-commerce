@@ -2,7 +2,7 @@ version: "3"
 services:
   backend:
     build:
-      context: ./back-end-golang
+      context: ./back-end
       dockerfile: Dockerfile
     env_file:
       - ./back-end/.env
@@ -11,15 +11,13 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./back-end:/app/back-end  # Exemple de volume pour le backend
+      - ./back-end:/app/back-end # Volume pour le backend
 
   front-end:
     build:
       context: ./front-vue
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     ports:
-      - "5173:5173"
-    depends_on:
-      - backend
+      - "3000:3000"
     volumes:
-      - /front-vue:/app/front-vue  # Volume pour le front-end
+      - ./front-vue:/app # Volume pour le front-end

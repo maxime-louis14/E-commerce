@@ -1,14 +1,14 @@
-# Utilisez une image Node.js pour construire l'application Vue.js
-FROM node:14 as build
+# Étape 1 : Utilisez une image Node.js pour construire l'application Vue.js
+FROM node:18 as build
 
 # Définissez le répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Copiez le package.json et le package-lock.json dans le conteneur
+# Copiez package.json et package-lock.json dans le conteneur
 COPY package*.json ./
 
 # Installez les dépendances du projet
-RUN npm install
+RUN npm ci
 
 # Copiez tous les fichiers du projet dans le conteneur
 COPY . .
@@ -16,14 +16,5 @@ COPY . .
 # Compilez l'application Vue.js pour la production
 RUN npm run build
 
-# Utilisez une image légère NGINX pour servir l'application
-FROM nginx:alpine
-
-# Copiez les fichiers de l'application construite dans le répertoire de travail de NGINX
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Exposez le port 80 pour accéder à l'application via le navigateur
+# Exposez le port 3000 pour accéder à l'application via le navigateur
 EXPOSE 3000
-
-# Commande pour démarrer le serveur NGINX
-CMD ["nginx", "-g", "daemon off;"]
