@@ -53,7 +53,6 @@ func SignUp() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		fmt.Println(c)
 
 		validationErr := validate.Struct(user)
 		fmt.Println(validationErr)

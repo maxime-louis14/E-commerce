@@ -16,16 +16,16 @@ func main() {
 		port = "5000"
 	}
 
-	router := gin.New()
-	router.Use(gin.Logger())
-	routes.UserRoutes(router)
+	router := gin.Default()
 
+	// Appel de la fonction UserRoutes pour définir les routes liées aux utilisateurs
+	routes.UserRoutes(router)
+	router.Use(gin.Logger())
 	router.Use(middleware.Authentication())
 
 	// API-2
 	router.GET("/api-1", func(c *gin.Context) {
 		c.JSON(200, gin.H{"success": "Access granted for api-1"})
-
 	})
 
 	// API-1
@@ -33,5 +33,5 @@ func main() {
 		c.JSON(200, gin.H{"success": "Access granted for api-2"})
 	})
 
-	router.Run(":" + port)	
+	router.Run(":" + port)
 }
