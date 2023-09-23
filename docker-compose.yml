@@ -2,7 +2,7 @@ version: "3"
 services:
   backend:
     build:
-      context: ./back-end
+      context: ./back-end-golang
       dockerfile: Dockerfile
     env_file:
       - ./back-end/.env
@@ -10,12 +10,16 @@ services:
       - WAIT_HOSTS=mongo
     ports:
       - "8080:8080"
+    volumes:
+      - ./back-end:/app/back-end  # Exemple de volume pour le backend
 
   front-end:
     build:
-      context: ./front-end
-      dockerfile: Dockerfile
+      context: ./front-vue
+      dockerfile: dockerfile
     ports:
-      - "3000:3000"
+      - "5173:5173"
     depends_on:
       - backend
+    volumes:
+      - /front-vue:/app/front-vue  # Volume pour le front-end
