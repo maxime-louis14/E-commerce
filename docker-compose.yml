@@ -1,4 +1,5 @@
 version: "3"
+
 services:
   backend:
     build:
@@ -13,11 +14,12 @@ services:
     volumes:
       - ./back-end:/app/back-end # Volume pour le backend
 
-  front-end:
+  front-vue:
     build:
       context: ./front-vue
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     volumes:
-      - ./front-vue:/app # Volume pour le front-end
+      - ./front-vue:/app/front-vue # Volume pour le front-end
+      - /app/node_modules
