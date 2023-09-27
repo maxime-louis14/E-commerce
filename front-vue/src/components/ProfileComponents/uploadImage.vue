@@ -44,14 +44,34 @@ const handleFileChange = () => {
   selectedFile.value = fileInput.value.files[0];
 };
 
-const uploadImage = () => {
-  // Ici, vous pouvez envoyer l'image au serveur ou effectuer toute autre opération nécessaire
+const uploadImage = async () => {
   if (selectedFile.value) {
     const formData = new FormData();
     formData.append("image", selectedFile.value);
 
-    // Envoyez formData au serveur en utilisant une requête HTTP (par exemple, axios)
-    // Assurez-vous de gérer la réponse du serveur en conséquence
+    try {
+      // Envoyez formData au serveur en utilisant fetch
+      const response = await fetch("/votre-endpoint-de-telechargement", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        // Si la réponse n'est pas OK, lancez une erreur
+        throw new Error("Erreur lors de l'envoi de l'image");
+      }
+
+      // Gérez la réponse du serveur en conséquence
+      const data = await response.json();
+      console.log("Réponse du serveur :", data);
+
+      // Effacez le champ de fichier après avoir téléchargé l'image (si nécessaire)
+      fileInput.value.value = null;
+      selectedFile.value = null;
+    } catch (error) {
+      // Gérez les erreurs ici
+      console.error("Erreur lors de l'envoi de l'image :", error);
+    }
   }
 };
 
