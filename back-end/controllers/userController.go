@@ -3,8 +3,10 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/maxime-louis14/Clone-site-Vilebrequin/database"
@@ -43,10 +45,12 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 	return check, msg
 }
 
-// CreateUser is the api used to tget a single user
+// CreateUser is the api used to get a single user
 func SignUp() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
 		var user models.User
 
 		if err := c.BindJSON(&user); err != nil {
@@ -62,12 +66,12 @@ func SignUp() gin.HandlerFunc {
 		}
 
 		count, err := userCollection.CountDocuments(ctx, bson.M{"email": user.Email})
-		defer cancel()
 		if err != nil {
 			log.Panic(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while checking for the email"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the email"})
 			return
 		}
+		defer cancel()
 
 		if count > 0 {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email or phone number already exists"})
@@ -77,10 +81,13 @@ func SignUp() gin.HandlerFunc {
 		password := HashPassword(*user.Password)
 		user.Password = &password
 
-		user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		user.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		currentTime := time.Now()
+		user.Created_at = currentTime
+		user.Updated_at = currentTime
+
 		user.ID = primitive.NewObjectID()
 		user.User_id = user.ID.Hex()
+
 		token, refreshToken, _ := helper.GenerateAllTokens(*user.Email, *user.Nom, *user.Prenom, user.User_id, "")
 		user.Token = &token
 		user.Refresh_token = &refreshToken
@@ -91,17 +98,17 @@ func SignUp() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
-		defer cancel()
 
 		c.JSON(http.StatusOK, resultInsertionNumber)
-
 	}
 }
 
-// Login is the api used to tget a single user
+// Login is the api used to get a single user
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
 		var user models.User
 		var foundUser models.User
 
@@ -111,15 +118,13 @@ func Login() gin.HandlerFunc {
 		}
 
 		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
-		defer cancel()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "login or passowrd is incorrect"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "login or password is incorrect"})
 			return
 		}
 
 		passwordIsValid, msg := VerifyPassword(*user.Password, *foundUser.Password)
-		defer cancel()
-		if passwordIsValid != true {
+		if !passwordIsValid {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
@@ -129,6 +134,132 @@ func Login() gin.HandlerFunc {
 		helper.UpdateAllTokens(token, refreshToken, foundUser.User_id)
 
 		c.JSON(http.StatusOK, foundUser)
-
 	}
+}
+
+// UploadAvatar gère les téléversements d'avatar
+func UploadAvatar() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		// Obtenir le token JWT à partir de l'en-tête de la demande
+		tokenClient := c.GetHeader("Authorization")
+
+		// Rechercher l'utilisateur dans la base de données en utilisant le token client
+		user, err := FindUserByToken(tokenClient)
+
+		if err != nil {
+			// En cas d'erreur lors de la recherche de l'utilisateur, renvoyer une réponse 500
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la recherche de l'utilisateur", "message": "Erreur interne du serveur"})
+			return
+		}
+
+		// Si l'utilisateur n'est pas trouvé, renvoyer une réponse 404
+		if user == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Utilisateur introuvable", "message": "Utilisateur introuvable"})
+			return
+		}
+
+		// Vérifier si le token côté client correspond au token stocké en base de données
+		if user.Token != nil && *user.Token != tokenClient {
+			// En cas de token client incorrect, renvoyer une réponse 401
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token client incorrect", "message": "Non autorisé"})
+			return
+		}
+
+		// Récupérer le fichier d'avatar à partir de la requête HTTP
+		file, err := c.FormFile("avatar")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Erreur lors de la récupération du fichier d'avatar"})
+			return
+		}
+
+		// Générer un nom de fichier unique pour l'image d'avatar
+		avatarFileName := fmt.Sprintf("public/uploads/%d-%s", time.Now().Unix(), file.Filename)
+
+		// Définir le chemin de stockage de l'avatar
+		avatarFilePath := avatarFileName
+
+		// Créer le fichier de destination sur le serveur
+		outFile, err := os.Create(avatarFilePath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du fichier d'avatar"})
+			return
+		}
+		defer outFile.Close()
+
+		// Copier le contenu du fichier source dans le fichier de destination
+		src, err := file.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de l'ouverture du fichier source"})
+			return
+		}
+		defer src.Close()
+
+		_, err = io.Copy(outFile, src)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la copie du contenu du fichier"})
+			return
+		}
+
+		// Mettre à jour le chemin de l'avatar dans la base de données
+		user.Avatar = &avatarFilePath
+		if err := UpdateUser(user); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour de l'avatar dans la base de données"})
+			return
+		}
+
+		// Répondre avec un succès et l'URL de l'avatar
+		c.JSON(http.StatusOK, gin.H{"message": "Avatar téléversé avec succès", "avatar_url": avatarFilePath})
+	}
+}
+
+// UpdateUser met à jour un utilisateur dans la base de données
+func UpdateUser(user *models.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Filtre pour trouver l'utilisateur par ID
+	filter := bson.M{"user_id": user.User_id}
+
+	// Définition de la mise à jour pour mettre à jour le chemin de l'avatar
+	update := bson.M{
+		"$set": bson.M{
+			"avatar": user.Avatar,
+		},
+	}
+
+	// Effectuer la mise à jour dans la base de données
+	_, err := userCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// FindUserByToken recherche un utilisateur par token dans la base de données
+func FindUserByToken(token string) (*models.User, error) {
+	var user models.User
+
+	// Ajoutez un message de log pour indiquer le début de la fonction
+	log.Println("Début de la recherche de l'utilisateur par token")
+
+	// Utiliser la connexion MongoDB pour rechercher l'utilisateur par token
+	err := userCollection.FindOne(context.TODO(), bson.M{"token": token}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// Ajoutez un message de log en cas de document non trouvé
+			log.Println("Aucun document trouvé pour le token :", token)
+			return nil, nil // Aucun document trouvé, retourne nil sans erreur
+		}
+
+		// En cas d'autres erreurs, ajoutez un message de log d'erreur
+		log.Println("Erreur lors de la recherche de l'utilisateur :", err)
+		return nil, err
+	}
+
+	// Ajoutez un message de log pour indiquer la fin de la fonction
+	log.Println("Fin de la recherche de l'utilisateur par token")
+
+	return &user, nil
 }
