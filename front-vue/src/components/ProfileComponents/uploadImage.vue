@@ -51,7 +51,7 @@ const uploadImage = async () => {
 
     try {
       // Envoyez formData au serveur en utilisant fetch
-      const response = await fetch("/votre-endpoint-de-telechargement", {
+      const response = await fetch("http://localhost:8080/users/:id/avatar", {
         method: "POST",
         body: formData
       });

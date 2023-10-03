@@ -6,7 +6,8 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     watch: {
-      usePolling: true
+      usePolling: true, // Désactiver le sondage
+      poll: 1000 // Définir un délai de sondage (en millisecondes)
     },
     host: true,
     strictPort: true,

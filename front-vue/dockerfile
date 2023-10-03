@@ -17,7 +17,7 @@ COPY . .
 RUN npm install vite
 
 # Compilez l'application Vue.js pour la production
-CMD [ "npm", "run", "dev" ]
+CMD ["npm", "run", "dev"]
 
 # Exposez le port 3000 pour accéder à l'application via le navigateur
 EXPOSE 3000

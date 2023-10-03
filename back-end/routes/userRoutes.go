@@ -9,7 +9,8 @@ import (
 // UserRoutes function
 func UserRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.Use(middleware.CorsMiddleware())
-	
+
 	incomingRoutes.POST("/users/register", controller.SignUp())
 	incomingRoutes.POST("/users/login", controller.Login())
+	incomingRoutes.POST("/users/avatar/:id", middleware.Authentication(), controller.UploadAvatar())
 }

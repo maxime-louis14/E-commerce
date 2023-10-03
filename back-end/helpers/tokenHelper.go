@@ -16,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// SignedDetails
+// SignedDetails représente les détails signés du token JWT
 type SignedDetails struct {
 	Email     string
 	Nom       string
@@ -26,29 +26,35 @@ type SignedDetails struct {
 	jwt.StandardClaims
 }
 
+// Collection d'utilisateurs dans la base de données
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
 
+// SECRET_KEY est la clé secrète utilisée pour signer les tokens JWT
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
-// GenerateAllTokens generates both teh detailed token and refresh token
+// GenerateAllTokens génère à la fois le token détaillé et le token de rafraîchissement
 func GenerateAllTokens(email string, nom string, prenom string, userType string, uid string) (signedToken string, signedRefreshToken string, err error) {
+	// Création des claims du token
 	claims := &SignedDetails{
 		Email:     email,
 		Nom:       nom,
 		Prenom:    prenom,
 		Uid:       uid,
 		User_type: userType,
+
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(), // Token expirera dans 24 heures
 		},
 	}
 
+	// Création des claims du token de rafraîchissement
 	refreshClaims := &SignedDetails{
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(168)).Unix(),
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(168)).Unix(), // Token de rafraîchissement expirera en 7 jours
 		},
 	}
 
+	// Création du token en utilisant la méthode de signature HS256 et la clé secrète
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SECRET_KEY))
 
@@ -60,8 +66,9 @@ func GenerateAllTokens(email string, nom string, prenom string, userType string,
 	return token, refreshToken, err
 }
 
-// ValidateToken validates the jwt token
+// ValidateToken valide le token JWT
 func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
+	// Analyse du token en utilisant la clé secrète
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&SignedDetails{},
@@ -91,12 +98,13 @@ func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
 	return claims, msg
 }
 
-// UpdateAllTokens renews the user tokens when they login
+// UpdateAllTokens renouvelle les tokens de l'utilisateur lors de sa connexion
 func UpdateAllTokens(signedToken string, signedRefreshToken string, userId string) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 
 	var updateObj primitive.D
 
+	// Mise à jour des tokens et de la date de mise à jour
 	updateObj = append(updateObj, bson.E{Key: "token", Value: signedToken})
 	updateObj = append(updateObj, bson.E{Key: "refresh_token", Value: signedRefreshToken})
 
@@ -109,6 +117,7 @@ func UpdateAllTokens(signedToken string, signedRefreshToken string, userId strin
 		Upsert: &upsert,
 	}
 
+	// Mettre à jour le document utilisateur en base de données
 	_, err := userCollection.UpdateOne(
 		ctx,
 		filter,

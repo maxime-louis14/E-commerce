@@ -1,3 +1,3 @@
 <template>
-  <h1 class="text-3xl text-black text-center font-bold underline">Je suis pas la </h1>
+  <h1 class="text-3xl text-red-600 text-center font-bold underline">Shop Vilebrequin </h1>
 </template>

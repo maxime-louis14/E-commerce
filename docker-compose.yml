@@ -22,4 +22,4 @@ services:
       - "3000:3000"
     volumes:
       - ./front-vue:/app/front-vue # Volume pour le front-end
-      - /app/node_modules
+      - /app/front-vue/node_modules
