@@ -1,3 +1,5 @@
+// routes/user_routes.go
+
 package routes
 
 import (
@@ -10,7 +12,9 @@ import (
 func UserRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.Use(middleware.CorsMiddleware())
 
-	incomingRoutes.POST("/users/register", controller.SignUp())
-	incomingRoutes.POST("/users/login", controller.Login())
-	incomingRoutes.POST("/users/avatar/:id", middleware.Authentication(), controller.UploadAvatar())
+	incomingRoutes.POST("/api/users/register", controller.SignUp())
+	incomingRoutes.POST("/api/users/login", controller.Login())
+
+	// Utilisez le middleware ParseMultipartFormMiddleware ici
+	incomingRoutes.POST("/api/users/avatar/:id", middleware.Authentication(), middleware.ParseMultipartFormMiddleware(), controller.UploadAvatar())
 }

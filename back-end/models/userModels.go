@@ -13,6 +13,7 @@ type User struct {
 	Password      *string            `json:"password" validate:"required,min=1"`
 	Email         *string            `json:"email" validate:"email,required"`
 	Avatar        *string            `json:"avatar"`
+	AvatarURL     *string            `json:"avatar_url"` // Champ pour l'URL de l'avatar
 	Token         *string            `json:"token"`
 	Refresh_token *string            `json:"refresh_token"`
 	Created_at    time.Time          `json:"created_at"`

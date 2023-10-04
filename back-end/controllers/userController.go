@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/maxime-louis14/Clone-site-Vilebrequin/database"
@@ -140,7 +141,6 @@ func Login() gin.HandlerFunc {
 // UploadAvatar gère les téléversements d'avatar
 func UploadAvatar() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		// Obtenir le token JWT à partir de l'en-tête de la demande
 		tokenClient := c.GetHeader("Authorization")
 
@@ -155,7 +155,7 @@ func UploadAvatar() gin.HandlerFunc {
 
 		// Si l'utilisateur n'est pas trouvé, renvoyer une réponse 404
 		if user == nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Utilisateur introuvable", "message": "Utilisateur introuvable"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Utilisateur introuvable", "message": "404"})
 			return
 		}
 
@@ -173,14 +173,25 @@ func UploadAvatar() gin.HandlerFunc {
 			return
 		}
 
+		// Vérifier l'extension du fichier (autoriser uniquement .gif et .jpg)
+		allowedExtensions := map[string]bool{
+			".gif": true,
+			".jpg": true,
+		}
+		ext := filepath.Ext(file.Filename)
+		if !allowedExtensions[ext] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Extension de fichier non autorisée"})
+			return
+		}
+
 		// Générer un nom de fichier unique pour l'image d'avatar
 		avatarFileName := fmt.Sprintf("public/uploads/%d-%s", time.Now().Unix(), file.Filename)
 
-		// Définir le chemin de stockage de l'avatar
-		avatarFilePath := avatarFileName
+		// Définir l'URL de l'avatar
+		avatarURL := "/public/uploads/avatars" + avatarFileName
 
 		// Créer le fichier de destination sur le serveur
-		outFile, err := os.Create(avatarFilePath)
+		outFile, err := os.Create(avatarFileName)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du fichier d'avatar"})
 			return
@@ -201,40 +212,17 @@ func UploadAvatar() gin.HandlerFunc {
 			return
 		}
 
-		// Mettre à jour le chemin de l'avatar dans la base de données
-		user.Avatar = &avatarFilePath
+		// Mettre à jour le champ AvatarURL dans la base de données
+		user.AvatarURL = &avatarURL
+
 		if err := UpdateUser(user); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour de l'avatar dans la base de données"})
 			return
 		}
 
 		// Répondre avec un succès et l'URL de l'avatar
-		c.JSON(http.StatusOK, gin.H{"message": "Avatar téléversé avec succès", "avatar_url": avatarFilePath})
+		c.JSON(http.StatusOK, gin.H{"message": "Avatar téléversé avec succès", "avatar_url": avatarURL})
 	}
-}
-
-// UpdateUser met à jour un utilisateur dans la base de données
-func UpdateUser(user *models.User) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	// Filtre pour trouver l'utilisateur par ID
-	filter := bson.M{"user_id": user.User_id}
-
-	// Définition de la mise à jour pour mettre à jour le chemin de l'avatar
-	update := bson.M{
-		"$set": bson.M{
-			"avatar": user.Avatar,
-		},
-	}
-
-	// Effectuer la mise à jour dans la base de données
-	_, err := userCollection.UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // FindUserByToken recherche un utilisateur par token dans la base de données
@@ -252,14 +240,33 @@ func FindUserByToken(token string) (*models.User, error) {
 			log.Println("Aucun document trouvé pour le token :", token)
 			return nil, nil // Aucun document trouvé, retourne nil sans erreur
 		}
-
 		// En cas d'autres erreurs, ajoutez un message de log d'erreur
 		log.Println("Erreur lors de la recherche de l'utilisateur :", err)
 		return nil, err
 	}
-
 	// Ajoutez un message de log pour indiquer la fin de la fonction
 	log.Println("Fin de la recherche de l'utilisateur par token")
 
 	return &user, nil
+}
+
+// UpdateUser met à jour un utilisateur dans la base de données
+func UpdateUser(user *models.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	// Filtre pour trouver l'utilisateur par ID
+	filter := bson.M{"user_id": user.User_id}
+	// Définition de la mise à jour pour mettre à jour le chemin de l'avatar
+	update := bson.M{
+		"$set": bson.M{
+			"avatar": user.Avatar,
+		},
+	}
+	// Effectuer la mise à jour dans la base de données
+	_, err := userCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
