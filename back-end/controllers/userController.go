@@ -25,7 +25,7 @@ import (
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
 var validate = validator.New()
 
-// HashPassword is used to encrypt the password before it is stored in the DB
+// HashPassword est utilisée pour crypter le mot de passe avant de le stocker dans la base de données
 func HashPassword(password string) string {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
@@ -40,13 +40,13 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 	check := true
 	msg := ""
 	if err != nil {
-		msg = fmt.Sprintf("login or password is incorrect")
+		msg = fmt.Sprintf("login ou mot de passe incorrect")
 		check = false
 	}
 	return check, msg
 }
 
-// CreateUser is the api used to get a single user
+// SignUp est l'API utilisée pour créer un nouvel utilisateur
 func SignUp() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -59,26 +59,28 @@ func SignUp() gin.HandlerFunc {
 			return
 		}
 
+		// Valider les données de l'utilisateur
 		validationErr := validate.Struct(user)
-		fmt.Println(validationErr)
 		if validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			return
 		}
 
+		// Vérifier si l'utilisateur existe déjà
 		count, err := userCollection.CountDocuments(ctx, bson.M{"email": user.Email})
 		if err != nil {
 			log.Panic(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the email"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "erreur lors de la vérification de l'adresse e-mail"})
 			return
 		}
 		defer cancel()
 
 		if count > 0 {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email or phone number already exists"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "cette adresse e-mail ou ce numéro de téléphone existe déjà"})
 			return
 		}
 
+		// Hachage du mot de passe
 		password := HashPassword(*user.Password)
 		user.Password = &password
 
@@ -89,13 +91,14 @@ func SignUp() gin.HandlerFunc {
 		user.ID = primitive.NewObjectID()
 		user.User_id = user.ID.Hex()
 
+		// Génération des tokens
 		token, refreshToken, _ := helper.GenerateAllTokens(*user.Email, *user.Nom, *user.Prenom, user.User_id, "")
 		user.Token = &token
 		user.Refresh_token = &refreshToken
 
 		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, user)
 		if insertErr != nil {
-			msg := fmt.Sprintf("User item was not created")
+			msg := fmt.Sprintf("L'utilisateur n'a pas pu être créé")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
@@ -104,7 +107,7 @@ func SignUp() gin.HandlerFunc {
 	}
 }
 
-// Login is the api used to get a single user
+// Login est l'API utilisée pour authentifier un utilisateur
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
@@ -120,7 +123,7 @@ func Login() gin.HandlerFunc {
 
 		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "login or password is incorrect"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "login ou mot de passe incorrect"})
 			return
 		}
 
@@ -259,7 +262,8 @@ func UpdateUser(user *models.User) error {
 	// Définition de la mise à jour pour mettre à jour le chemin de l'avatar
 	update := bson.M{
 		"$set": bson.M{
-			"avatar": user.Avatar,
+			"avatar":     user.Avatar,
+			"avatar_url": user.AvatarURL,
 		},
 	}
 	// Effectuer la mise à jour dans la base de données

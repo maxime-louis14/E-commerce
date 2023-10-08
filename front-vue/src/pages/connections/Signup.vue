@@ -105,7 +105,7 @@ export default {
         };
 
         // Envoyez les informations d'enregistrement au backend
-        const response = await fetch("http://localhost:8080/users/register", {
+        const response = await fetch("http://localhost:8080/api/users/register", {
           method: "POST",
           headers: {
             "Content-Type": "application/json" // Spécifiez le type de contenu JSON
