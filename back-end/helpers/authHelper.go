@@ -18,7 +18,7 @@ func CheckUserType(c *gin.Context, role string) (err error) {
 	return err
 }
 
-//MatchUserTypeToUid only allows the user to access their data and no other data. Only the admin can access all user data
+//MatchUserTypeToUid ne permet à l'utilisateur d'accéder qu'à ses données et à aucune autre donnée. Seul l'administrateur peut accéder à toutes les données de l'utilisateur
 func MatchUserTypeToUid(c *gin.Context, userId string) (err error) {
 	userType := c.GetString("user_type")
 	uid := c.GetString("uid")

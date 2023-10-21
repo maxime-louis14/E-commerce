@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Authz validates token and authorizes users
+// Authz valide le jeton et autorise les utilisateurs
 func Authentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		clientToken := c.Request.Header.Get("token")

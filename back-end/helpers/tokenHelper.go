@@ -28,7 +28,7 @@ type SignedDetails struct {
 
 // Collection d'utilisateurs dans la base de données
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
-
+ 
 // SECRET_KEY est la clé secrète utilisée pour signer les tokens JWT
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
@@ -66,7 +66,7 @@ func GenerateAllTokens(email string, nom string, prenom string, userType string,
 	return token, refreshToken, err
 }
 
-// ValidateToken valide le token JWT
+// ValidateToken valide le token JWT Décode le Token
 func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
 	// Analyse du token en utilisant la clé secrète
 	token, err := jwt.ParseWithClaims(

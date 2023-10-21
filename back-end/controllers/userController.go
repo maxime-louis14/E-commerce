@@ -145,10 +145,13 @@ func Login() gin.HandlerFunc {
 func UploadAvatar() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Obtenir le token JWT à partir de l'en-tête de la demande
-		tokenClient := c.GetHeader("Authorization")
+		tokenClient := c.Request.Header.Get("token")
+		
+		log.Println("token ", tokenClient)
 
 		// Rechercher l'utilisateur dans la base de données en utilisant le token client
 		user, err := FindUserByToken(tokenClient)
+		log.Println("user la", user)
 
 		if err != nil {
 			// En cas d'erreur lors de la recherche de l'utilisateur, renvoyer une réponse 500
@@ -180,6 +183,7 @@ func UploadAvatar() gin.HandlerFunc {
 		allowedExtensions := map[string]bool{
 			".gif": true,
 			".jpg": true,
+			
 		}
 		ext := filepath.Ext(file.Filename)
 		if !allowedExtensions[ext] {
