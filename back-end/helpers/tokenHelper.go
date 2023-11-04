@@ -28,12 +28,14 @@ type SignedDetails struct {
 
 // Collection d'utilisateurs dans la base de données
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
- 
+
 // SECRET_KEY est la clé secrète utilisée pour signer les tokens JWT
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
 // GenerateAllTokens génère à la fois le token détaillé et le token de rafraîchissement
-func GenerateAllTokens(email string, nom string, prenom string, userType string, uid string) (signedToken string, signedRefreshToken string, err error) {
+func GenerateAllTokens(email string, nom string, prenom string, uid string, userType string) (signedToken string, signedRefreshToken string, err error) {
+
+	log.Println("UID de l'utilisateur lors de la génération des tokens :", uid)
 	// Création des claims du token
 	claims := &SignedDetails{
 		Email:     email,

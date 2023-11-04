@@ -81,8 +81,8 @@ func SignUp() gin.HandlerFunc {
 		}
 
 		// Hachage du mot de passe
-		password := HashPassword(*user.Password)
-		user.Password = &password
+		password := HashPassword(user.Password)
+		user.Password = password
 
 		currentTime := time.Now()
 		user.Created_at = currentTime
@@ -92,7 +92,7 @@ func SignUp() gin.HandlerFunc {
 		user.User_id = user.ID.Hex()
 
 		// Génération des tokens
-		token, refreshToken, _ := helper.GenerateAllTokens(*user.Email, *user.Nom, *user.Prenom, user.User_id, "")
+		token, refreshToken, _ := helper.GenerateAllTokens(user.Email, user.Nom, user.Prenom, user.User_id, "")
 		user.Token = &token
 		user.Refresh_token = &refreshToken
 
@@ -127,13 +127,13 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		passwordIsValid, msg := VerifyPassword(*user.Password, *foundUser.Password)
+		passwordIsValid, msg := VerifyPassword(user.Password, foundUser.Password)
 		if !passwordIsValid {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
 
-		token, refreshToken, _ := helper.GenerateAllTokens(*foundUser.Email, *foundUser.Nom, *foundUser.Prenom, foundUser.User_id, "")
+		token, refreshToken, _ := helper.GenerateAllTokens(foundUser.Email, foundUser.Nom, foundUser.Prenom, foundUser.User_id, "")
 
 		helper.UpdateAllTokens(token, refreshToken, foundUser.User_id)
 
@@ -144,134 +144,131 @@ func Login() gin.HandlerFunc {
 // UploadAvatar gère les téléversements d'avatar
 func UploadAvatar() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Accédez aux revendications du token directement depuis le contexte
-		email, emailExists := c.Get("email")
-		nom, nomExists := c.Get("nom")
-		prenom, prenomExists := c.Get("prenom")
-
-		// Accédez aux revendications du token directement depuis le contexte
 		uid, uidExists := c.Get("uid")
 
-		// Vérifiez si les champs existent avant de les utiliser
-		if emailExists && nomExists && prenomExists && uidExists {
-			// Utilisez l'UID comme nécessaire
-			log.Println("UID de l'utilisateur :", uid)
+		// Vérifiez si l'UID existe avant de l'utiliser
+		// Ajoute un journal pour vérifier l'UID extrait
+		log.Printf("UID de l'utilisateur lors de la génération des tokens : %v", uid)
 
-			// Utilisez les valeurs des revendications comme nécessaire
-			log.Println("Revendications de l'utilisateur : email=", email, "nom=", nom, "prenom=", prenom, "uid=", uid)
-
-			// Récupérer le fichier d'avatar à partir de la requête HTTP
-			file, err := c.FormFile("avatar")
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Erreur lors de la récupération du fichier d'avatar"})
-				return
-			}
-
-			// Vérifier l'extension du fichier (autoriser uniquement .gif et .jpg)
-			allowedExtensions := map[string]bool{
-				".gif": true,
-				".jpg": true,
-				".png": true,
-			}
-			ext := filepath.Ext(file.Filename)
-			if !allowedExtensions[ext] {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Extension de fichier non autorisée"})
-				return
-			}
-
-			// Générer un nom de fichier unique pour l'image d'avatar
-			avatarFileName := fmt.Sprintf("public/uploads/avatars/%d-%s", time.Now().Unix(), file.Filename)
-
-			// Définir l'URL de l'avatar
-			avatarURL := "/public/uploads/avatars" + avatarFileName
-
-			// Créer le fichier de destination sur le serveur
-			outFile, err := os.Create(avatarFileName)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du fichier d'avatar"})
-				return
-			}
-			defer outFile.Close()
-
-			// Copier le contenu du fichier source dans le fichier de destination
-			src, err := file.Open()
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de l'ouverture du fichier source"})
-				return
-			}
-			defer src.Close()
-
-			_, err = io.Copy(outFile, src)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la copie du contenu du fichier"})
-				return
-			}
-
-			// Mettre à jour le champ AvatarURL dans la base de données
-			user := &models.User{
-				Email:     email.(*string),
-				Nom:       nom.(*string),
-				Prenom:    prenom.(*string),
-				AvatarURL: &avatarURL,
-			}
-
-			if err := UpdateUser(user); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour de l'avatar dans la base de données"})
-				return
-			}
-
-			// Répondre avec un succès et l'URL de l'avatar
-			c.JSON(http.StatusOK, gin.H{"message": "Avatar téléversé avec succès", "avatar_url": avatarURL})
-		} else {
-			// Gérez le cas où l'une des revendications est manquante
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Revendications de token manquantes"})
+		// Assurez-vous que l'UID existe avant de l'utiliser
+		if !uidExists {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "UID de l'utilisateur manquant"})
+			return
 		}
-	}
-}
 
-// FindUserByToken recherche un utilisateur par token dans la base de données
-func FindUserByToken(token string) (*models.User, error) {
-	var user models.User
-
-	// Ajoutez un message de log pour indiquer le début de la fonction
-	log.Println("Début de la recherche de l'utilisateur par token")
-
-	// Utiliser la connexion MongoDB pour rechercher l'utilisateur par token
-	err := userCollection.FindOne(context.TODO(), bson.M{"token": token}).Decode(&user)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// Ajoutez un message de log en cas de document non trouvé
-			log.Println("Aucun document trouvé pour le token :", token)
-			return nil, nil // Aucun document trouvé, retourne nil sans erreur
+		// Récupérer le fichier d'avatar à partir de la requête HTTP
+		file, err := c.FormFile("avatar")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Erreur lors de la récupération du fichier d'avatar"})
+			return
 		}
-		// En cas d'autres erreurs, ajoutez un message de log d'erreur
-		log.Println("Erreur lors de la recherche de l'utilisateur :", err)
-		return nil, err
-	}
-	// Ajoutez un message de log pour indiquer la fin de la fonction
-	log.Println("Fin de la recherche de l'utilisateur par token")
 
-	return &user, nil
+		// Vérifier l'extension du fichier (autoriser uniquement .gif, .jpg, .png)
+		allowedExtensions := map[string]bool{
+			".gif": true,
+			".jpg": true,
+			".png": true,
+		}
+		ext := filepath.Ext(file.Filename)
+		if !allowedExtensions[ext] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Extension de fichier non autorisée"})
+			return
+		}
+
+		// Générer un nom de fichier unique pour l'image d'avatar
+		avatarFileName := fmt.Sprintf("public/uploads/avatars/%d-%s", time.Now().Unix(), file.Filename)
+
+		// Définir l'URL de l'avatar
+		avatarURL := "/public/uploads/avatars/" + avatarFileName
+
+		// Créer le fichier de destination sur le serveur
+		outFile, err := os.Create(avatarFileName)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du fichier d'avatar"})
+			return
+		}
+		defer outFile.Close()
+
+		// Copier le contenu du fichier source dans le fichier de destination
+		src, err := file.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de l'ouverture du fichier source"})
+			return
+		}
+		defer src.Close()
+
+		_, err = io.Copy(outFile, src)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la copie du contenu du fichier"})
+			return
+		}
+
+		// Mettre à jour le champ AvatarURL dans la base de données
+		user := &models.User{
+			User_id:   uid.(string),
+			AvatarURL: &avatarURL,
+		}
+
+		// Vérifiez si l'UID existe avant de l'utiliser
+		if !uidExists {
+			log.Println("UID de l'utilisateur manquant")
+			c.JSON(http.StatusBadRequest, gin.H{"error": "UID de l'utilisateur manquant"})
+			return
+		}
+
+		if err := UpdateUser(user); err != nil {
+			// Ajoutez un journal pour afficher la valeur de l'UID avant la mise à jour
+			log.Println("UID de l'utilisateur avant la mise à jour :", user.User_id)
+			log.Println("Erreur lors de la mise à jour de l'avatar dans la base de données:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour de l'avatar dans la base de données"})
+			return
+		}
+
+		if err := UpdateUser(user); err != nil {
+			log.Println("Erreur lors de la mise à jour de l'avatar dans la base de données:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour de l'avatar dans la base de données"})
+			return
+		}
+
+		log.Println("Avatar URL mis à jour avec succès :", *user.AvatarURL)
+
+		// Répondre avec un succès et l'URL de l'avatar
+		c.JSON(http.StatusOK, gin.H{"message": "Avatar téléversé avec succès", "avatarurl": avatarURL})
+	}
+
 }
 
 // UpdateUser met à jour un utilisateur dans la base de données
 func UpdateUser(user *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	// Filtre pour trouver l'utilisateur par ID
+
+	// Filtre pour trouver l'utilisateur par ID (utilisez "user_id")
 	filter := bson.M{"user_id": user.User_id}
+
 	// Définition de la mise à jour pour mettre à jour le chemin de l'avatar
 	update := bson.M{
 		"$set": bson.M{
-			"avatar":     user.Avatar,
-			"avatar_url": user.AvatarURL,
+			"avatarurl": user.AvatarURL,
 		},
 	}
-	// Effectuer la mise à jour dans la base de données
-	_, err := userCollection.UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
+
+	// Avant de lancer la requête FindOneAndUpdate, ajoutez ces journaux pour vérifier le filtre
+	log.Println("Début de la mise à jour de l'utilisateur dans la base de données")
+	log.Println("Filtre de recherche :", filter)
+	log.Println("Données de l'utilisateur à mettre à jour :", user.User_id)
+
+	// Effectuer la mise à jour dans la base de données en utilisant FindOneAndUpdate
+	result := userCollection.FindOneAndUpdate(ctx, filter, update)
+
+	if result.Err() != nil {
+		// Ajoutez un message de journalisation en cas d'erreur
+		log.Println("Erreur lors de la mise à jour de l'utilisateur dans la base de données:", result.Err())
+		return result.Err()
 	}
+
+	// Ajouter un message de journalisation pour indiquer la fin de la mise à jour
+	log.Println("Fin de la mise à jour de l'utilisateur dans la base de données")
 
 	return nil
 }
