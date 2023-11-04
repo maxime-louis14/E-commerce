@@ -17,7 +17,7 @@
         <input
           type="file"
           ref="fileInput"
-          accept="image/*"
+          accept="avatar/*"
           @change="handleFileChange"
           class="border p-2 w-full"
         />
@@ -27,7 +27,7 @@
           type="submit"
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
         >
-          Télécharger
+          Envoyez
         </button>
       </div>
     </form>
@@ -37,23 +37,36 @@
 <script setup>
 import { ref, computed } from "vue";
 
-const fileInput = ref(null);
-const selectedFile = ref(null);
+const fileInput = ref(null); // Référence pour l'élément d'entrée de fichier
+const selectedFile = ref(null); // Référence pour le fichier sélectionné
 
 const handleFileChange = () => {
-  selectedFile.value = fileInput.value.files[0];
+  selectedFile.value = fileInput.value.files[0]; // Met à jour le fichier sélectionné lorsqu'un fichier est choisi
 };
 
 const uploadImage = async () => {
   if (selectedFile.value) {
-    const formData = new FormData();
-    formData.append("image", selectedFile.value);
+    const formData = new FormData(); // Crée un objet FormData pour envoyer les données du fichier
+
+    formData.append("avatar", selectedFile.value); // Ajoute le fichier au FormData
 
     try {
+      // Récupérez le token JWT depuis le local storage
+      const token = localStorage.getItem("Token");
+      console.log("Token JWT récupéré depuis le local storage :", token);
+
+      const headers = new Headers();
+      headers.append("Authorization", token); // Utilisez le token récupéré dans l'en-tête d'autorisation
+      console.log(
+        "En-tête de la requête avec le token :",
+        headers.get("Authorization")
+      );
+
       // Envoyez formData au serveur en utilisant fetch
-      const response = await fetch("http://localhost:8080/users/:id/avatar", {
+      const response = await fetch("http://localhost:8080/api/users/avatar", {
         method: "POST",
-        body: formData
+        body: formData,
+        headers: headers // Ajoute l'en-tête d'autorisation au fetch
       });
 
       if (!response.ok) {

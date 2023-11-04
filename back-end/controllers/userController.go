@@ -40,7 +40,7 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 	check := true
 	msg := ""
 	if err != nil {
-		msg = fmt.Sprintf("login ou mot de passe incorrect")
+		msg = ("login ou mot de passe incorrect")
 		check = false
 	}
 	return check, msg
@@ -98,7 +98,7 @@ func SignUp() gin.HandlerFunc {
 
 		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, user)
 		if insertErr != nil {
-			msg := fmt.Sprintf("L'utilisateur n'a pas pu être créé")
+			msg := ("L'utilisateur n'a pas pu être créé")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
@@ -145,10 +145,6 @@ func Login() gin.HandlerFunc {
 func UploadAvatar() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid, uidExists := c.Get("uid")
-
-		// Vérifiez si l'UID existe avant de l'utiliser
-		// Ajoute un journal pour vérifier l'UID extrait
-		log.Printf("UID de l'utilisateur lors de la génération des tokens : %v", uid)
 
 		// Assurez-vous que l'UID existe avant de l'utiliser
 		if !uidExists {
@@ -253,11 +249,6 @@ func UpdateUser(user *models.User) error {
 		},
 	}
 
-	// Avant de lancer la requête FindOneAndUpdate, ajoutez ces journaux pour vérifier le filtre
-	log.Println("Début de la mise à jour de l'utilisateur dans la base de données")
-	log.Println("Filtre de recherche :", filter)
-	log.Println("Données de l'utilisateur à mettre à jour :", user.User_id)
-
 	// Effectuer la mise à jour dans la base de données en utilisant FindOneAndUpdate
 	result := userCollection.FindOneAndUpdate(ctx, filter, update)
 
@@ -266,9 +257,6 @@ func UpdateUser(user *models.User) error {
 		log.Println("Erreur lors de la mise à jour de l'utilisateur dans la base de données:", result.Err())
 		return result.Err()
 	}
-
-	// Ajouter un message de journalisation pour indiquer la fin de la mise à jour
-	log.Println("Fin de la mise à jour de l'utilisateur dans la base de données")
 
 	return nil
 }

@@ -7,8 +7,8 @@ import UploadImage from "../../components/ProfileComponents/uploadImage.vue";
     <div class="max-w-6xl mx-auto">
       <h2 class="text-2xl font-semibold mb-6">Ajouter votre avatar</h2>
       <img
-        v-if="image != null"
-        :src="image"
+        v-if="avatar != null"
+        :src="avatar"
         alt="img"
         class="max-w-[300px] mx-auto mt-2 rounded-full"
       />
