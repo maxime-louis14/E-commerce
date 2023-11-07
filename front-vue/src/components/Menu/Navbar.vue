@@ -39,7 +39,7 @@ import { RouterLink, RouterView } from "vue-router";
         <!-- Image à gauche de "Inscription" avec un espacement de 10px -->
         <img
           class="h-16 w-16 object-cover rounded-full mr-10"
-          src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1361&q=80"
+          src="{avatar}"
           alt="Current profile photo"
         />
         <RouterLink

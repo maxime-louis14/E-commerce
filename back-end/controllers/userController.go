@@ -141,13 +141,14 @@ func Login() gin.HandlerFunc {
 	}
 }
 
-// UploadAvatar gère les téléversements d'avatar
+// Gérer les téléversements d'avatar
 func UploadAvatar() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid, uidExists := c.Get("uid")
 
 		// Assurez-vous que l'UID existe avant de l'utiliser
 		if !uidExists {
+			log.Println("UID de l'utilisateur manquant")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "UID de l'utilisateur manquant"})
 			return
 		}
@@ -155,6 +156,7 @@ func UploadAvatar() gin.HandlerFunc {
 		// Récupérer le fichier d'avatar à partir de la requête HTTP
 		file, err := c.FormFile("avatar")
 		if err != nil {
+			log.Println("Erreur lors de la récupération du fichier d'avatar :", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Erreur lors de la récupération du fichier d'avatar"})
 			return
 		}
@@ -167,6 +169,7 @@ func UploadAvatar() gin.HandlerFunc {
 		}
 		ext := filepath.Ext(file.Filename)
 		if !allowedExtensions[ext] {
+			log.Println("Extension de fichier non autorisée :", ext)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Extension de fichier non autorisée"})
 			return
 		}
@@ -176,10 +179,12 @@ func UploadAvatar() gin.HandlerFunc {
 
 		// Définir l'URL de l'avatar
 		avatarURL := "/public/uploads/avatars/" + avatarFileName
+		log.Println("URL de l'avatar :", avatarURL)
 
 		// Créer le fichier de destination sur le serveur
 		outFile, err := os.Create(avatarFileName)
 		if err != nil {
+			log.Println("Erreur lors de la création du fichier d'avatar :", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du fichier d'avatar"})
 			return
 		}
@@ -188,6 +193,7 @@ func UploadAvatar() gin.HandlerFunc {
 		// Copier le contenu du fichier source dans le fichier de destination
 		src, err := file.Open()
 		if err != nil {
+			log.Println("Erreur lors de l'ouverture du fichier source :", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de l'ouverture du fichier source"})
 			return
 		}
@@ -195,6 +201,7 @@ func UploadAvatar() gin.HandlerFunc {
 
 		_, err = io.Copy(outFile, src)
 		if err != nil {
+			log.Println("Erreur lors de la copie du contenu du fichier :", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la copie du contenu du fichier"})
 			return
 		}
@@ -211,6 +218,9 @@ func UploadAvatar() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "UID de l'utilisateur manquant"})
 			return
 		}
+
+		// Ajoutez un journal pour afficher la valeur de l'UID avant la mise à jour
+		log.Println("UID de l'utilisateur avant la mise à jour :", user.User_id)
 
 		if err := UpdateUser(user); err != nil {
 			// Ajoutez un journal pour afficher la valeur de l'UID avant la mise à jour
@@ -231,7 +241,6 @@ func UploadAvatar() gin.HandlerFunc {
 		// Répondre avec un succès et l'URL de l'avatar
 		c.JSON(http.StatusOK, gin.H{"message": "Avatar téléversé avec succès", "avatarurl": avatarURL})
 	}
-
 }
 
 // UpdateUser met à jour un utilisateur dans la base de données

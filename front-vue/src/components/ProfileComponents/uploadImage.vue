@@ -14,6 +14,7 @@
   <div>
     <form @submit.prevent="uploadImage" class="max-w-md mx-auto mt-8">
       <div class="mb-4">
+        <!-- Champ de saisie de fichier -->
         <input
           type="file"
           ref="fileInput"
@@ -23,11 +24,12 @@
         />
       </div>
       <div class="mb-4">
+        <!-- Bouton de soumission du formulaire -->
         <button
           type="submit"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+          class="bg-blue-500 hover-bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
         >
-          Envoyez
+          Envoyer
         </button>
       </div>
     </form>
@@ -37,59 +39,60 @@
 <script setup>
 import { ref, computed } from "vue";
 
-const fileInput = ref(null); // Référence pour l'élément d'entrée de fichier
-const selectedFile = ref(null); // Référence pour le fichier sélectionné
+const fileInput = ref(null); // Référence à l'élément d'entrée de fichier
+const selectedFile = ref(null); // Fichier sélectionné
+const error = ref(null); // Variable pour stocker les erreurs
 
 const handleFileChange = () => {
-  selectedFile.value = fileInput.value.files[0]; // Met à jour le fichier sélectionné lorsqu'un fichier est choisi
+  // Gérer le changement de fichier
+  selectedFile.value = fileInput.value.files[0];
 };
 
 const uploadImage = async () => {
   if (selectedFile.value) {
-    const formData = new FormData(); // Crée un objet FormData pour envoyer les données du fichier
+    const formData = new FormData(); // Créer un objet FormData pour envoyer le fichier
 
-    formData.append("avatar", selectedFile.value); // Ajoute le fichier au FormData
+    formData.append("avatar", selectedFile.value); // Ajouter le fichier au formulaire
 
     try {
-      // Récupérez le token JWT depuis le local storage
-      const token = localStorage.getItem("Token");
-      console.log("Token JWT récupéré depuis le local storage :", token);
+      const token = localStorage.getItem("Token"); // Récupérer le jeton JWT du stockage local
+      if (!token) {
+        const errorMessage = "Token JWT non trouvé dans le stockage local.";
+        console.error(errorMessage); // Journaliser l'erreur
+        error.value = errorMessage; // Stocker l'erreur dans la variable "error"
+        return; // Arrêter le traitement
+      }
 
-      const headers = new Headers();
-      headers.append("Authorization", token); // Utilisez le token récupéré dans l'en-tête d'autorisation
-      console.log(
-        "En-tête de la requête avec le token :",
-        headers.get("Authorization")
-      );
+      const headers = new Headers(); // Créer un objet Headers pour les en-têtes de la requête
+      headers.append("token", token); // Ajouter l'en-tête d'autorisation avec le jeton JWT
 
-      // Envoyez formData au serveur en utilisant fetch
       const response = await fetch("http://localhost:8080/api/users/avatar", {
-        method: "POST",
-        body: formData,
-        headers: headers // Ajoute l'en-tête d'autorisation au fetch
+        // Effectuer une requête HTTP POST vers l'URL du serveur
+        method: "POST", // Méthode POST
+        body: formData, // Corps de la requête avec le formulaire
+        headers: headers // En-têtes de la requête
       });
 
       if (!response.ok) {
-        // Si la réponse n'est pas OK, lancez une erreur
-        throw new Error("Erreur lors de l'envoi de l'image");
+        const errorData = await response.json(); // Obtenir des détails sur l'erreur
+        throw new Error(
+          `Erreur lors de l'envoi de l'image : ${errorData.message}`
+        );
       }
 
-      // Gérez la réponse du serveur en conséquence
-      const data = await response.json();
-      console.log("Réponse du serveur :", data);
+      const data = await response.json(); // Convertir la réponse en données JSON
 
-      // Effacez le champ de fichier après avoir téléchargé l'image (si nécessaire)
-      fileInput.value.value = null;
-      selectedFile.value = null;
+      fileInput.value.value = null; // Effacer la sélection du fichier
+      selectedFile.value = null; // Réinitialiser le fichier sélectionné
     } catch (error) {
-      // Gérez les erreurs ici
-      console.error("Erreur lors de l'envoi de l'image :", error);
+      error.value = error.message; // Stocker l'erreur dans la variable "error"
+      console.error("Erreur lors de l'envoi de l'image :", error.message); // Gérer les erreurs
     }
   }
 };
 
-// Créez une propriété calculée pour obtenir l'URL de l'image sélectionnée
 const selectedFileURL = computed(() => {
   return selectedFile.value ? URL.createObjectURL(selectedFile.value) : "";
+  // Créer une URL d'objet pour afficher l'image sélectionnée (ou chaîne vide si aucun fichier sélectionné)
 });
 </script>
