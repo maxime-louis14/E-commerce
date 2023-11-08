@@ -17,4 +17,5 @@ func UserRoutes(incomingRoutes *gin.Engine) {
 
 	// Utilisez le middleware ParseMultipartFormMiddleware ici
 	incomingRoutes.POST("/api/users/avatar", middleware.Authentication(), middleware.ParseMultipartFormMiddleware(), controller.UploadAvatar())
+	incomingRoutes.GET("/api/users/avatar", middleware.Authentication(), controller.GetAvatarImage())
 }

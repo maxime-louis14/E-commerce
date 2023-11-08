@@ -6,16 +6,18 @@ import (
 )
 
 type User struct {
-	ID            primitive.ObjectID `bson:"_id"`
-	User_id       string             `json:"user_id"`
-	Role          string             `json:"role"`
-	Nom           string             `json:"nom" validate:"required,min=2,max=100"`
-	Prenom        string             `json:"prenom" validate:"required,min=2,max=100"`
-	Password      string             `json:"password" validate:"required,min=1"`
-	Email         string             `json:"email" validate:"email,required"`
-	AvatarURL     *string            `json:"avatarurl"` // Champ pour l'URL de l'avatar
-	Token         *string            `json:"token"`
-	Refresh_token *string            `json:"refresh_token"`
-	Created_at    time.Time          `json:"created_at"`
-	Updated_at    time.Time          `json:"updated_at"`
+	ID                primitive.ObjectID `bson:"_id"`
+	User_id           string             `json:"user_id"`
+	Nom               string             `json:"nom" validate:"required,min=2,max=100"`
+	Prenom            string             `json:"prenom" validate:"required,min=2,max=100"`
+	Password          string             `json:"password" validate:"required,min=1"`
+	Email             string             `json:"email" validate:"email,required"`
+	AvatarURL         string             `json:"avatar_url"`
+	AvatarImageData   []byte             `json:"avatar_image_data"`   // Ajoutez le champ pour les données de l'avatar
+	AvatarContentType string             `json:"avatar_content_type"` // Ajoutez le champ pour le type de contenu de l'avatar
+	Role              string             `json:"role"`
+	Token             *string            `json:"token"`
+	Refresh_token     *string            `json:"refresh_token"`
+	Created_at        time.Time          `json:"created_at"`
+	Updated_at        time.Time          `json:"updated_at"`
 }

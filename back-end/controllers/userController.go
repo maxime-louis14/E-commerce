@@ -2,27 +2,25 @@ package controllers
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/maxime-louis14/Clone-site-Vilebrequin/database"
-	helper "github.com/maxime-louis14/Clone-site-Vilebrequin/helpers"
-	"github.com/maxime-louis14/Clone-site-Vilebrequin/models"
-
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/mgo.v2/bson"
+
+	"github.com/maxime-louis14/Clone-site-Vilebrequin/database"
+	"github.com/maxime-louis14/Clone-site-Vilebrequin/helpers"
+	models "github.com/maxime-louis14/Clone-site-Vilebrequin/models"
 )
 
-var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
+var userCollection = database.OpenCollection(database.Client, "user")
 var validate = validator.New()
 
 // HashPassword est utilisée pour crypter le mot de passe avant de le stocker dans la base de données
@@ -40,7 +38,7 @@ func VerifyPassword(userPassword string, providedPassword string) (bool, string)
 	check := true
 	msg := ""
 	if err != nil {
-		msg = ("login ou mot de passe incorrect")
+		msg = "login ou mot de passe incorrect"
 		check = false
 	}
 	return check, msg
@@ -67,7 +65,7 @@ func SignUp() gin.HandlerFunc {
 		}
 
 		// Vérifier si l'utilisateur existe déjà
-		count, err := userCollection.CountDocuments(ctx, bson.M{"email": user.Email})
+		count, err := userCollection.CountDocuments(ctx, primitive.M{"email": user.Email})
 		if err != nil {
 			log.Panic(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "erreur lors de la vérification de l'adresse e-mail"})
@@ -98,7 +96,7 @@ func SignUp() gin.HandlerFunc {
 
 		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, user)
 		if insertErr != nil {
-			msg := ("L'utilisateur n'a pas pu être créé")
+			msg := "L'utilisateur n'a pas pu être créé"
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
@@ -121,7 +119,7 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
+		err := userCollection.FindOne(ctx, primitive.M{"email": user.Email}).Decode(&foundUser)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "login ou mot de passe incorrect"})
 			return
@@ -141,7 +139,7 @@ func Login() gin.HandlerFunc {
 	}
 }
 
-// Gérer les téléversements d'avatar
+// UploadAvatar gère les téléversements d'avatar
 func UploadAvatar() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid, uidExists := c.Get("uid")
@@ -174,76 +172,80 @@ func UploadAvatar() gin.HandlerFunc {
 			return
 		}
 
-		// Générer un nom de fichier unique pour l'image d'avatar
-		avatarFileName := fmt.Sprintf("public/uploads/avatars/%d-%s", time.Now().Unix(), file.Filename)
-
-		// Définir l'URL de l'avatar
-		avatarURL := "/public/uploads/avatars/" + avatarFileName
-		log.Println("URL de l'avatar :", avatarURL)
-
-		// Créer le fichier de destination sur le serveur
-		outFile, err := os.Create(avatarFileName)
-		if err != nil {
-			log.Println("Erreur lors de la création du fichier d'avatar :", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la création du fichier d'avatar"})
-			return
-		}
-		defer outFile.Close()
-
-		// Copier le contenu du fichier source dans le fichier de destination
-		src, err := file.Open()
+		// Lire le contenu du fichier en tant que tableau de bytes
+		fileContent, err := file.Open()
 		if err != nil {
 			log.Println("Erreur lors de l'ouverture du fichier source :", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de l'ouverture du fichier source"})
 			return
 		}
-		defer src.Close()
+		defer fileContent.Close()
 
-		_, err = io.Copy(outFile, src)
+		data, err := io.ReadAll(fileContent)
 		if err != nil {
-			log.Println("Erreur lors de la copie du contenu du fichier :", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la copie du contenu du fichier"})
+			log.Println("Erreur lors de la lecture du contenu du fichier :", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la lecture du contenu du fichier"})
 			return
 		}
 
-		// Mettre à jour le champ AvatarURL dans la base de données
-		user := &models.User{
-			User_id:   uid.(string),
-			AvatarURL: &avatarURL,
+		// Créez une instance de la structure User
+		avatar := &models.User{
+			User_id:           uid.(string),
+			AvatarImageData:   data,
+			AvatarContentType: file.Header.Get("Content-Type"),
+			AvatarURL:         "/avatars/" + uid.(string) + ".jpg",
 		}
 
-		// Vérifiez si l'UID existe avant de l'utiliser
-		if !uidExists {
-			log.Println("UID de l'utilisateur manquant")
-			c.JSON(http.StatusBadRequest, gin.H{"error": "UID de l'utilisateur manquant"})
-			return
-		}
-
-		// Ajoutez un journal pour afficher la valeur de l'UID avant la mise à jour
-		log.Println("UID de l'utilisateur avant la mise à jour :", user.User_id)
-
-		if err := UpdateUser(user); err != nil {
-			// Ajoutez un journal pour afficher la valeur de l'UID avant la mise à jour
-			log.Println("UID de l'utilisateur avant la mise à jour :", user.User_id)
-			log.Println("Erreur lors de la mise à jour de l'avatar dans la base de données:", err)
+		// Insérez l'avatar dans la base de données
+		err = UpdateUserAvatar(uid.(string), avatar)
+		if err != nil {
+			log.Println("Erreur lors de la mise à jour de l'avatar dans la base de données :", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour de l'avatar dans la base de données"})
 			return
 		}
 
-		if err := UpdateUser(user); err != nil {
-			log.Println("Erreur lors de la mise à jour de l'avatar dans la base de données:", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la mise à jour de l'avatar dans la base de données"})
-			return
-		}
+		log.Println("Avatar mis à jour avec succès")
 
-		log.Println("Avatar URL mis à jour avec succès :", *user.AvatarURL)
-
-		// Répondre avec un succès et l'URL de l'avatar
-		c.JSON(http.StatusOK, gin.H{"message": "Avatar téléversé avec succès", "avatarurl": avatarURL})
+		// Répondre avec un succès
+		c.JSON(http.StatusOK, gin.H{"message": "Avatar téléversé avec succès"})
 	}
 }
 
-// UpdateUser met à jour un utilisateur dans la base de données
+// Mettre à jour les champs d'avatar en utilisant UpdateOne
+func UpdateUserAvatar(userID string, user *models.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Filtre pour trouver l'utilisateur par ID (utilisez "user_id")
+	filter := bson.M{"user_id": userID}
+
+	// Contrôle des champs d'avatar
+	if user.AvatarImageData == nil || user.AvatarContentType == "" || user.AvatarURL == "" {
+		// Vous pouvez choisir de gérer cette situation comme vous le souhaitez, par exemple, retourner une erreur ou effectuer une action par défaut.
+		return errors.New("Les champs d'avatar ne peuvent pas être vides")
+	}
+
+	// Définition de la mise à jour pour mettre à jour les champs d'avatar
+	update := bson.M{
+		"$set": bson.M{
+			"avatar_image_data":   user.AvatarImageData,
+			"avatar_content_type": user.AvatarContentType,
+			"avatar_url":          user.AvatarURL,
+		},
+	}
+
+	// Effectuer la mise à jour dans la base de données en utilisant UpdateOne
+	_, err := userCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		// Ajoutez un message de journalisation en cas d'erreur
+		log.Println("Erreur lors de la mise à jour de l'avatar dans la base de données :", err)
+		return err
+	}
+
+	return nil
+}
+
+// Mettre à jour les champs Avatar et ContentType en utilisant UpdateOne
 func UpdateUser(user *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -251,21 +253,75 @@ func UpdateUser(user *models.User) error {
 	// Filtre pour trouver l'utilisateur par ID (utilisez "user_id")
 	filter := bson.M{"user_id": user.User_id}
 
-	// Définition de la mise à jour pour mettre à jour le chemin de l'avatar
+	// Contrôle des champs d'avatar
+	if user.AvatarURL == "" || user.AvatarContentType == "" {
+		// Vous pouvez choisir de gérer cette situation comme vous le souhaitez, par exemple, retourner une erreur ou effectuer une action par défaut.
+		return errors.New("Les champs d'avatar ne peuvent pas être vides")
+	}
+
+	// Définition de la mise à jour pour mettre à jour les champs Avatar et ContentType
 	update := bson.M{
 		"$set": bson.M{
-			"avatarurl": user.AvatarURL,
+			"avatar":      user.AvatarURL,
+			"contentType": user.AvatarContentType,
 		},
 	}
 
-	// Effectuer la mise à jour dans la base de données en utilisant FindOneAndUpdate
-	result := userCollection.FindOneAndUpdate(ctx, filter, update)
-
-	if result.Err() != nil {
+	// Effectuer la mise à jour dans la base de données en utilisant UpdateOne
+	_, err := userCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
 		// Ajoutez un message de journalisation en cas d'erreur
-		log.Println("Erreur lors de la mise à jour de l'utilisateur dans la base de données:", result.Err())
-		return result.Err()
+		log.Println("Erreur lors de la mise à jour de l'utilisateur dans la base de données:", err)
+		return err
 	}
 
 	return nil
+}
+
+// GetAvatar est utilisé pour obtenir l'avatar d'un utilisateur
+// GetAvatarImage est utilisée pour obtenir l'avatar d'un utilisateur et l'envoyer au front-end
+func GetAvatarImage() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Récupérer l'ID de l'utilisateur depuis le contexte
+		userID, userIDExists := c.Get("user_id")
+
+		if !userIDExists {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de l'utilisateur manquant"})
+			return
+		}
+
+		// Rechercher l'utilisateur par son ID
+		user, err := FindUserByID(userID.(string))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la recherche de l'utilisateur"})
+			return
+		}
+
+		if user.AvatarURL == "" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Aucun avatar trouvé pour cet utilisateur"})
+			return
+		}
+
+		// Définir le type de contenu de la réponse HTTP en fonction du champ AvatarContentType de l'utilisateur
+		contentType := user.AvatarContentType
+
+		// Envoyer le contenu de l'image d'avatar au front-end avec le bon type de contenu
+		c.Data(http.StatusOK, contentType, []byte(user.AvatarURL))
+	}
+}
+
+// FindUserByID recherche un utilisateur dans la base de données par son ID
+func FindUserByID(userID string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var user models.User
+	filter := bson.M{"user_id": userID}
+
+	err := userCollection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
