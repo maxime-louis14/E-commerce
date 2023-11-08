@@ -212,12 +212,12 @@ func UploadAvatar() gin.HandlerFunc {
 }
 
 // Mettre à jour les champs d'avatar en utilisant UpdateOne
-func UpdateUserAvatar(userID string, user *models.User) error {
+func UpdateUserAvatar(user_id string, user *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Filtre pour trouver l'utilisateur par ID (utilisez "user_id")
-	filter := bson.M{"user_id": userID}
+	filter := bson.M{"user_id": user_id}
 
 	// Contrôle des champs d'avatar
 	if user.AvatarImageData == nil || user.AvatarContentType == "" || user.AvatarURL == "" {
@@ -228,9 +228,9 @@ func UpdateUserAvatar(userID string, user *models.User) error {
 	// Définition de la mise à jour pour mettre à jour les champs d'avatar
 	update := bson.M{
 		"$set": bson.M{
-			"avatar_image_data":   user.AvatarImageData,
-			"avatar_content_type": user.AvatarContentType,
-			"avatar_url":          user.AvatarURL,
+			"avatarimagedata":   user.AvatarImageData,
+			"avatarcontenttype": user.AvatarContentType,
+			"avatarurl":         user.AvatarURL,
 		},
 	}
 
@@ -262,8 +262,8 @@ func UpdateUser(user *models.User) error {
 	// Définition de la mise à jour pour mettre à jour les champs Avatar et ContentType
 	update := bson.M{
 		"$set": bson.M{
-			"avatar":      user.AvatarURL,
-			"contentType": user.AvatarContentType,
+			"avatarurl":         user.AvatarURL,
+			"avatarcontenttype": user.AvatarContentType,
 		},
 	}
 
@@ -279,25 +279,27 @@ func UpdateUser(user *models.User) error {
 }
 
 // GetAvatar est utilisé pour obtenir l'avatar d'un utilisateur
-// GetAvatarImage est utilisée pour obtenir l'avatar d'un utilisateur et l'envoyer au front-end
 func GetAvatarImage() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Récupérer l'ID de l'utilisateur depuis le contexte
-		userID, userIDExists := c.Get("user_id")
+		user_id, user_idExists := c.Get("uid")
 
-		if !userIDExists {
+		if !user_idExists {
+			log.Println("ID de l'utilisateur manquant")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de l'utilisateur manquant"})
 			return
 		}
 
 		// Rechercher l'utilisateur par son ID
-		user, err := FindUserByID(userID.(string))
+		user, err := FindUserByID(user_id.(string))
 		if err != nil {
+			log.Printf("Erreur lors de la recherche de l'utilisateur: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la recherche de l'utilisateur"})
 			return
 		}
 
 		if user.AvatarURL == "" {
+			log.Println("Aucun avatar trouvé pour cet utilisateur")
 			c.JSON(http.StatusNotFound, gin.H{"error": "Aucun avatar trouvé pour cet utilisateur"})
 			return
 		}
@@ -311,12 +313,12 @@ func GetAvatarImage() gin.HandlerFunc {
 }
 
 // FindUserByID recherche un utilisateur dans la base de données par son ID
-func FindUserByID(userID string) (*models.User, error) {
+func FindUserByID(user_id string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	var user models.User
-	filter := bson.M{"user_id": userID}
+	filter := bson.M{"user_id": user_id}
 
 	err := userCollection.FindOne(ctx, filter).Decode(&user)
 	if err != nil {

@@ -12,9 +12,9 @@ type User struct {
 	Prenom            string             `json:"prenom" validate:"required,min=2,max=100"`
 	Password          string             `json:"password" validate:"required,min=1"`
 	Email             string             `json:"email" validate:"email,required"`
-	AvatarURL         string             `json:"avatar_url"`
-	AvatarImageData   []byte             `json:"avatar_image_data"`   // Ajoutez le champ pour les données de l'avatar
-	AvatarContentType string             `json:"avatar_content_type"` // Ajoutez le champ pour le type de contenu de l'avatar
+	AvatarURL         string             `json:"avatarurl"`
+	AvatarImageData   []byte             `json:"avatarimagedata"`   // Ajoutez le champ pour les données de l'avatar
+	AvatarContentType string             `json:"avatarcontenttype"` // Ajoutez le champ pour le type de contenu de l'avatar
 	Role              string             `json:"role"`
 	Token             *string            `json:"token"`
 	Refresh_token     *string            `json:"refresh_token"`
