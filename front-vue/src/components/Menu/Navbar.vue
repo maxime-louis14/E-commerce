@@ -1,5 +1,6 @@
 <script setup>
 import { RouterLink, RouterView } from "vue-router";
+import { getAvatarURL } from "../services/AvatarService";
 </script>
 <template>
   <nav class="bg-gray-800 text-white p-4">
@@ -37,11 +38,8 @@ import { RouterLink, RouterView } from "vue-router";
 
       <div class="flex items-center space-x-2">
         <!-- Image à gauche de "Inscription" avec un espacement de 10px -->
-        <img
-          class="h-16 w-16 object-cover rounded-full mr-10"
-          src="{avatar}"
-          alt="Current profile photo"
-        />
+          <!-- Utilisez getAvatarURL() pour récupérer l'URL de l'avatar -->
+        <img v-if="getAvatarURL() !== null" :src="getAvatarURL()" alt="Image de profil" />
         <RouterLink
           to="/inscription"
           class="hover:bg-gray-600 px-4 py-2 rounded"

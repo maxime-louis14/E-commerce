@@ -2,43 +2,42 @@
   <div class="bg-gray-100 min-h-screen py-8">
     <div class="max-w-6xl mx-auto">
       <h2 class="text-2xl font-semibold mb-6">Ajouter votre avatar</h2>
-      <img
-        v-if="avatar !== null"
-        :src="avatar"
-        alt="Image de profil"
-        class="max-w-[300px] mx-auto mt-2 rounded-full"
-      />
       <div class="ml-4">
         <h2 class="text-2xl text-center font-semibold mb-6">Avatar actuel</h2>
+        <!-- Utilisez la propriété avatar pour afficher l'URL de l'avatar -->
         <img
+          v-if="avatarURL !== null"
+          :src="avatarURL"
+          alt="Image de profil"
           class="max-w-[300px] mx-auto mt-2 rounded-full"
-          :src="avatar"
-          alt="Image de profil actuelle"
         />
       </div>
     </div>
-    <UploadImage />
+    <PostImage />
   </div>
 </template>
 
 <script setup>
-import UploadImage from "../../components/ProfileComponents/uploadImage.vue";
 import { ref, onMounted } from "vue";
+import PostImage from "../../components/ProfileComponents/PostImage.vue";
+import { setAvatarURL } from "../../components/services/AvatarService";
 
 const avatar = ref(null);
+const avatarURL = ref(null);
+const loading = ref(true);
 
-// Fonction pour récupérer l'image de profil actuelle
 const getAvatarImage = async () => {
   try {
-    const token = localStorage.getItem("Token"); // Récupérer le jeton JWT du stockage local
+    loading.value = true;
+
+    const token = localStorage.getItem("Token");
 
     if (!token) {
-      console.error("Token JWT non trouvé dans le stockage local.");
-      return; // Arrêter le traitement si le token n'est pas disponible
+      throw new Error("Token JWT non trouvé dans le stockage local.");
     }
 
     const headers = new Headers();
-    headers.append("token", token); // Ajouter le jeton JWT dans l'en-tête
+    headers.append("token", token);
 
     const response = await fetch("http://localhost:8080/api/users/avatar", {
       method: "GET",
@@ -46,19 +45,31 @@ const getAvatarImage = async () => {
     });
 
     if (response.ok) {
-      avatar.value = URL.createObjectURL(await response.blob());
+      const contentType = response.headers.get("Content-Type");
+
+      if (contentType && contentType.startsWith("image/")) {
+        avatarURL.value = URL.createObjectURL(await response.blob());
+      } else {
+        const data = await response.json();
+        avatarURL.value = data.avatarURL;
+        avatar.value = URL.createObjectURL(await response.blob());
+      }
     } else {
-      console.error("Échec de la récupération de l'image de profil");
+      throw new Error("Échec de la récupération de l'image de profil");
     }
   } catch (error) {
     console.error(
       "Erreur lors de la récupération de l'image de profil:",
-      error
+      error.message
     );
+  } finally {
+    loading.value = false;
   }
+
+  setAvatarURL(avatarURL.value);
 };
 
 onMounted(() => {
-  getAvatarImage(); // Appel de la fonction lors du montage du composant
+  getAvatarImage();
 });
 </script>

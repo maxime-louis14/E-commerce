@@ -319,37 +319,47 @@ func UpdateUser(user *models.User) error {
 	return nil
 }
 
-// GetAvatar est utilisé pour obtenir l'avatar d'un utilisateur
 func GetAvatarImage() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Récupérer l'ID de l'utilisateur depuis le contexte
-		user_id, user_idExists := c.Get("uid")
+		userID, userIDExists := c.Get("uid")
 
-		if !user_idExists {
-			log.Println("ID de l'utilisateur manquant")
+		if !userIDExists {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "ID de l'utilisateur manquant"})
 			return
 		}
 
 		// Rechercher l'utilisateur par son ID
-		user, err := FindUserByID(user_id.(string))
+		user, err := FindUserByID(userID.(string))
 		if err != nil {
-			log.Printf("Erreur lors de la recherche de l'utilisateur: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la recherche de l'utilisateur"})
 			return
 		}
 
 		if user.AvatarURL == "" {
-			log.Println("Aucun avatar trouvé pour cet utilisateur")
 			c.JSON(http.StatusNotFound, gin.H{"error": "Aucun avatar trouvé pour cet utilisateur"})
 			return
 		}
 
-		// Définir le type de contenu de la réponse HTTP en fonction du champ AvatarContentType de l'utilisateur
-		contentType := user.AvatarContentType
+		// Construire le chemin complet du fichier d'avatar
+		avatarFilePath := filepath.Join("public/uploads/avatars", filepath.Base(user.AvatarURL))
+
+		// Lire le contenu de l'image depuis la base de données ou le système de fichiers
+		imageData, err := ioutil.ReadFile(avatarFilePath)
+		if err != nil {
+			log.Println("Erreur lors de la lecture du fichier d'avatar :", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la lecture du fichier d'avatar"})
+			return
+		}
+
+		// Utiliser le type de contenu préféré par le client s'il est spécifié, sinon utiliser le type de contenu de l'utilisateur
+		contentType := c.ContentType()
+		if contentType == "" {
+			contentType = user.AvatarContentType
+		}
 
 		// Envoyer le contenu de l'image d'avatar au front-end avec le bon type de contenu
-		c.Data(http.StatusOK, contentType, []byte(user.AvatarURL))
+		c.Data(http.StatusOK, contentType, imageData)
 	}
 }
 

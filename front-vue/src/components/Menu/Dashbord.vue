@@ -1,4 +1,7 @@
-<script setup></script>
+<script setup>
+import { getAvatarURL } from "../services/AvatarService";
+ 
+</script>
 
 <template>
   <div class="bg-gray-100 min-h-screen py-8">
@@ -25,11 +28,7 @@
 
           <!-- Image à droite -->
           <div class="ml-4">
-            <img
-              class="h-16 w-16 object-cover rounded-full"
-              src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1361&q=80"
-              alt="Current profile photo"
-            />
+               <img v-if="getAvatarURL() !== null" :src="getAvatarURL()" alt="Image de profil" />
           </div>
         </a>
 
