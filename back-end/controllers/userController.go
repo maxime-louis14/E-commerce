@@ -3,9 +3,12 @@ package controllers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -139,7 +142,6 @@ func Login() gin.HandlerFunc {
 	}
 }
 
-// UploadAvatar gère les téléversements d'avatar
 func UploadAvatar() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid, uidExists := c.Get("uid")
@@ -159,18 +161,19 @@ func UploadAvatar() gin.HandlerFunc {
 			return
 		}
 
-		// Vérifier l'extension du fichier (autoriser uniquement .gif, .jpg, .png)
-		allowedExtensions := map[string]bool{
-			".gif": true,
-			".jpg": true,
-			".png": true,
-		}
+		// Vérifier l'extension du fichier
 		ext := filepath.Ext(file.Filename)
-		if !allowedExtensions[ext] {
+		if !isValidExtension(ext) {
 			log.Println("Extension de fichier non autorisée :", ext)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Extension de fichier non autorisée"})
 			return
 		}
+
+		// Générer un nom de fichier unique pour l'image d'avatar
+		avatarFileName := fmt.Sprintf("%d-%s", time.Now().Unix(), file.Filename)
+
+		// Définir le chemin complet du fichier sur le serveur
+		fullPath := "public/uploads/avatars/" + avatarFileName
 
 		// Lire le contenu du fichier en tant que tableau de bytes
 		fileContent, err := file.Open()
@@ -188,15 +191,24 @@ func UploadAvatar() gin.HandlerFunc {
 			return
 		}
 
-		// Créez une instance de la structure User
+		// Sauvegarder l'image sur le serveur
+		if err := SaveImageToFile(fullPath, data); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la sauvegarde de l'image sur le serveur"})
+			return
+		}
+
+		// Définir l'URL de l'avatar
+		avatarURL := "public/uploads/avatars/" + avatarFileName
+
+		// Créer une instance de la structure User
 		avatar := &models.User{
 			User_id:           uid.(string),
 			AvatarImageData:   data,
 			AvatarContentType: file.Header.Get("Content-Type"),
-			AvatarURL:         "/avatars/" + uid.(string) + ".jpg",
+			AvatarURL:         avatarURL,
 		}
 
-		// Insérez l'avatar dans la base de données
+		// Insérer l'avatar dans la base de données
 		err = UpdateUserAvatar(uid.(string), avatar)
 		if err != nil {
 			log.Println("Erreur lors de la mise à jour de l'avatar dans la base de données :", err)
@@ -211,6 +223,35 @@ func UploadAvatar() gin.HandlerFunc {
 	}
 }
 
+func SaveImageToFile(filePath string, data []byte) error {
+	// Assurez-vous que le répertoire de destination existe
+	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
+		log.Printf("Erreur lors de la création du répertoire : %v\n", err)
+		return err
+	}
+
+	// Écrire le contenu de l'image dans le fichier
+	err := ioutil.WriteFile(filePath, data, 0644)
+	if err != nil {
+		log.Printf("Erreur lors de l'écriture du fichier : %v\n", err)
+		return err
+	}
+
+	log.Printf("Image enregistrée avec succès : %s\n", filePath)
+	return nil
+}
+
+// isValidExtension vérifie si l'extension du fichier est autorisée
+func isValidExtension(ext string) bool {
+	allowedExtensions := map[string]bool{
+		".gif":  true,
+		".jpg":  true,
+		".jpeg": true,
+		".png":  true,
+	}
+	return allowedExtensions[ext]
+}
+
 // Mettre à jour les champs d'avatar en utilisant UpdateOne
 func UpdateUserAvatar(user_id string, user *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -222,7 +263,7 @@ func UpdateUserAvatar(user_id string, user *models.User) error {
 	// Contrôle des champs d'avatar
 	if user.AvatarImageData == nil || user.AvatarContentType == "" || user.AvatarURL == "" {
 		// Vous pouvez choisir de gérer cette situation comme vous le souhaitez, par exemple, retourner une erreur ou effectuer une action par défaut.
-		return errors.New("Les champs d'avatar ne peuvent pas être vides")
+		return errors.New("erreur lors de la récupération du fichier d'avatar")
 	}
 
 	// Définition de la mise à jour pour mettre à jour les champs d'avatar
@@ -256,7 +297,7 @@ func UpdateUser(user *models.User) error {
 	// Contrôle des champs d'avatar
 	if user.AvatarURL == "" || user.AvatarContentType == "" {
 		// Vous pouvez choisir de gérer cette situation comme vous le souhaitez, par exemple, retourner une erreur ou effectuer une action par défaut.
-		return errors.New("Les champs d'avatar ne peuvent pas être vides")
+		return errors.New("les champs d'avatar ne peuvent pas être vides")
 	}
 
 	// Définition de la mise à jour pour mettre à jour les champs Avatar et ContentType
