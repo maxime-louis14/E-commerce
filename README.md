@@ -1,10 +1,6 @@
-# Clonage du site Vilebrequin Shop avec Vue.js et Vite
+# E-commerce avec Vue.js et Vite
 
-Ce projet vise à cloner le site Vilebrequin Shop, disponible à l'adresse suivante : [https://www.shop.benzin.fr/vilebrequin?page=2](https://www.shop.benzin.fr/vilebrequin?page=2), en utilisant Vue.js avec Vite pour faciliter la configuration et le développement. L'objectif principal est de recréer la structure, le design et les fonctionnalités du site existant, en permettant aux utilisateurs de naviguer facilement et de consulter les produits disponibles sur Vilebrequin Shop.
-
-![Vilebrequin Shop Clone](https://www.bfmtv.com/people/tv/pierre-chabrier-et-sylvain-levy-de-la-chaine-vilebrequin-arrivent-aux-manettes-de-top-gear-france_AN-202305170712.html)
-
-![Youtube](https://www.youtube.com/channel/UCC9mlCpyisiIpp9YA9xV-QA)
+Ce projet et un E-commerce, disponible à l'adresse suivante : [https://www.shop.benzin.fr/vilebrequin?page=2](https://www.shop.benzin.fr/vilebrequin?page=2), en utilisant Vue.js avec Vite pour faciliter la configuration et le développement. L'objectif principal est de recréer la structure, le design et les fonctionnalités du site existant, en permettant aux utilisateurs de naviguer facilement et de consulter les produits disponibles sur Vilebrequin Shop.
 
 ## Fonctionnalités
 
@@ -49,7 +45,7 @@ git clone https://github.com/votre-utilisateur/vilebrequin-shop.git
 2. Accédez au répertoire du projet :
 
 ```shell
-cd vilebrequin-shop
+cd E-commerce
 ```
 
 3. Configurez les informations de connexion à la base de données et d'autres paramètres dans les fichiers de configuration appropriés.
