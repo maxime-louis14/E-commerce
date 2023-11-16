@@ -39,7 +39,7 @@ Pour configurer et déployer le projet de clonage du site Vilebrequin Shop en ut
 
 
 ```shell
-git clone https://github.com/votre-utilisateur/E-commerce.git
+git clone https://github.com/maxime-louis14/E-commerce.git
 ```
 
 2. Accédez au répertoire du projet :
