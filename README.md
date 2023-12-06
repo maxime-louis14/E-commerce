@@ -25,8 +25,6 @@ Le clonage du site Vilebrequin Shop sera réalisé en utilisant les technologies
 - Frontend (Vue.js avec Vite) :
   - [Vue.js](https://vuejs.org/) : Un framework JavaScript progressif pour la construction d'interfaces utilisateur.
   - [Vite](https://vitejs.dev/) : Un outil de développement rapide pour les applications Vue.js.
-  - Librairies UI (par exemple, [Vuetify](https://vuetifyjs.com/)) : Pour la création d'une interface utilisateur réactive et esthétique.
-  - Gestion d'état (par exemple, [Vuex](https://vuex.vuejs.org/)) : Pour gérer l'état global de l'application.
 
 - Docker : Pour faciliter la configuration et le déploiement du projet.
 
